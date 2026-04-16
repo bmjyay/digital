@@ -8,7 +8,7 @@ class Host:
     max_hostees = 1
     hostees = []
 
-    def __init__(self, name, gender, email, phone, max_hostees, hostees, score):
+    def __init__(self, name, gender, email, phone, max_hostees, hostees):
         self.name = name
         self.gender = gender
         self.email = email
@@ -37,7 +37,7 @@ class Hostee:
     host = Host("", "", "", "", 1, [])
     pre_matched = False
 
-    def __init__(self, name, gender, email, phone, host, pre_matched, score):
+    def __init__(self, name, gender, email, phone, host, pre_matched):
         self.name = name
         self.gender = gender
         self.email = email
@@ -249,10 +249,10 @@ for hostee in all_hostees:
     print(f'{hostee.name} | {hostee.host.name}')
 
 
-final = f''
+final = ''
 
 for host in all_hosts:
-    hostees = f''
+    hostees = ''
     for i in range(len(host.hostees)):
         if i == len(host.hostees) - 1:
             hostees += f'{host.hostees[i].name}'
@@ -262,7 +262,7 @@ for host in all_hosts:
 
 for hostee in all_hostees:
     host = hostee.host
-    hostees = f''
+    hostees = ''
     for i in range(len(host.hostees)):
         if i == len(host.hostees) - 1:
             hostees += f'{host.hostees[i].name}'
