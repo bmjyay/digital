@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Panel — IMC Housing</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/portal.css') }}">
+</head>
+
+<body>
+  <nav class="nav">
+    <a href="{{ url_for('portal') }}" class="nav__brand">
+      <img
+        src="{{ url_for('static', filename='images/imc-logo.jpg') }}"
+        alt="Ivy Muslim Conference"
+        class="nav__logo"
+      />
+      <span class="nav__brand-text">Ivy Muslim Conference @ Yale</span>
+    </a>
+
+    <div class="nav__spacer"></div>
+
+    <a class="nav__link" href="{{ url_for('portal') }}">Portal</a>
+
+    <form action="{{ url_for('admin_logout') }}" method="post" style="margin:0;">
+      <button class="nav__link nav__link--light" type="submit">Logout</button>
+    </form>
+  </nav>
+
+  <main class="container">
+
+    <section class="card">
+      <h2 class="section-heading" style="margin-top:0;">Data Upload</h2>
+      <p class="hint" style="margin-top:6px;">
+        Upload <b>hosts.csv</b> and <b>hostees.csv</b>. On upload, the database will be cleared and repopulated.
+      </p>
+
+      <div class="grid-2">
+        <div>
+          <label class="label" for="hostsCsv">hosts.csv</label>
+          <input id="hostsCsv" type="file" accept=".csv" />
+        </div>
+
+        <div>
+          <label class="label" for="hosteesCsv">hostees.csv</label>
+          <input id="hosteesCsv" type="file" accept=".csv" />
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <button id="btnUpload" type="button" class="btn-secondary">Upload</button>
+      </div>
+
+      <p id="uploadStatus" class="status" style="margin-top:12px;"></p>
+    </section>
+
+    <section class="card" style="margin-top:16px;">
+      <h2 class="section-heading" style="margin-top:0;">Matches</h2>
+      <p class="hint" style="margin-top:6px;">
+        Upload <b>prematches.csv</b>, then run <b>Match</b>. After matching, download <b>final.csv</b> and <b>matches.txt</b>.
+        You can also clear matches, which updates the database.
+      </p>
+
+      <div class="grid-2">
+        <div>
+          <label class="label" for="prematchesCsv">prematches.csv</label>
+          <input id="prematchesCsv" type="file" accept=".csv" />
+        </div>
+      </div>
+
+      <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+        <button id="btnMatch" type="button" class="btn-secondary">Match</button>
+        <a id="btnDownloadFinal" class="btn-secondary" href="{{ url_for('admin_download_final') }}" download hidden>Download final.csv</a>
+        <a id="btnDownloadMatches" class="btn-secondary" href="{{ url_for('admin_download_matches') }}" download hidden>Download matches.txt</a>
+        <button id="btnClear" type="button" class="btn-danger">Clear Matches</button>
+      </div>
+
+      <p id="matchStatus" class="status" style="margin-top:12px;"></p>
+    </section>
+
+    <section class="card" style="margin-top:16px;">
+      <div class="admin-row">
+        <div>
+          <h2 class="section-heading" style="margin-top:0;">Feedback</h2>
+          <p class="hint" style="margin-top:6px;">
+            This section fetches feedback submitted from the portal.
+          </p>
+        </div>
+        <div class="admin-actions">
+          <button id="btnRefreshFeedback" type="button" class="btn-secondary">Refresh</button>
+        </div>
+      </div>
+
+      <p id="feedbackStatus" class="status" style="margin-top:12px;"></p>
+
+      <div class="table-wrap" aria-label="Feedback table">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Content</th>
+              <th>Name</th>
+              <th>Email</th>
+            </tr>
+          </thead>
+          <tbody id="feedbackTbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer footer--light">
+    <div class="footer__inner">
+      <div class="footer__left">
+        <strong>IMC Housing</strong>
+        <span class="footer__muted">· Admin Panel</span>
+      </div>
+      <div class="footer__right">
+        <span class="footer__muted">Data uploads clear and repopulate the database.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>

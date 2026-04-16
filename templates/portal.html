@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IMC Housing Portal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/portal.css') }}">
+</head>
+
+<body>
+  <nav class="nav">
+    <a href="{{ url_for('portal') }}" class="nav__brand">
+      <img
+        id="nav-logo"
+        src="{{ url_for('static', filename='images/imc-logo.jpg') }}"
+        alt="Ivy Muslim Conference"
+        class="nav__logo"
+      />
+      <span class="nav__brand-text">Ivy Muslim Conference @ Yale</span>
+    </a>
+
+    <div class="nav__spacer"></div>
+
+    <button id="nav-user-chip" class="nav-user-chip" type="button" hidden>
+      <span class="nav-user-avatar" id="nav-user-avatar">I</span>
+      <span class="nav-user-label" id="nav-user-label">IMC attendee</span>
+    </button>
+
+    <button id="nav-login-button" class="nav__link nav__link--light" type="button">
+      Log in
+    </button>
+
+    <a class="nav__link" href="{{ url_for('admin_login') }}">Admin Panel</a>
+  </nav>
+  <body>
+    <div>
+     <div class="wave"></div>
+     <div class="wave"></div>
+     <div class="wave"></div>
+    </div>
+  </body>
+
+  <div id="nav-login-panel" class="nav-login-panel" hidden>
+    <form id="nav-login-form" class="nav-login-form">
+      <label for="nav-login-email" class="nav-login-label">Yale email</label>
+      <input
+        id="nav-login-email"
+        type="email"
+        placeholder="first.last@yale.edu"
+        autocomplete="email"
+        required
+      />
+
+      <label for="nav-login-code" class="nav-login-label">Code</label>
+      <div class="nav-login-code-row">
+        <input
+          id="nav-login-code"
+          type="text"
+          placeholder="4-digit code"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+        />
+      </div>
+
+      <small class="nav-login-hint">We’ll email a code to your Yale email.</small>
+
+      <div class="nav-login-actions">
+        <button type="button" id="nav-logout-button" class="btn-secondary">Log out</button>
+        <button type="button" id="nav-login-cancel" class="btn-secondary">Cancel</button>
+        <button type="submit" class="btn-secondary">Verify &amp; Log In</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="waves" aria-hidden="true">
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
+  </div>
+
+  <main class="snap-main">
+
+    <section id="top" class="snap-section snap-section--cover">
+      <header class="cover">
+        <div class="cover__bg" aria-hidden="true"></div>
+
+        <div class="cover__inner">
+          <p class="cover__kicker">Ivy Muslim Conference · Yale</p>
+
+          <h1 class="cover__title">
+            <span id="typewriter" class="typewriter"></span>
+            <span id="type-dot" class="type-dot" aria-hidden="true">.</span>
+            <span class="typewriter__caret" aria-hidden="true"></span>
+          </h1>
+
+          <div class="cover__logo-row" aria-hidden="true">
+            <img
+              id="cover-logo"
+              src="{{ url_for('static', filename='images/imc-logo.jpg') }}"
+              alt=""
+              class="cover-logo"
+            />
+          </div>
+
+          <p class="cover__subtitle">Housing assignments without the spreadsheet chaos.</p>
+
+          <div class="cover__actions">
+            <button class="btn-primary" type="button"
+              onclick="document.getElementById('portal-hero').scrollIntoView({behavior:'smooth', block:'start'})">
+              Enter portal
+            </button>
+
+            <button class="btn-ghost" type="button"
+              onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth', block:'start'})">
+              How it works
+            </button>
+          </div>
+
+          <div class="cover__scroll" aria-hidden="true">
+            <span class="cover__scroll-dot"></span>
+            <span class="cover__scroll-text">Scroll</span>
+          </div>
+        </div>
+      </header>
+    </section>
+
+    <section id="portal-hero" class="snap-section">
+      <div class="main">
+        <section class="card card--hero card--hero-xl hero-centered">
+          <div class="hero-grid">
+            <div class="hero-left">
+              <p class="hero-kicker">Ivy Muslim Conference · Housing Portal</p>
+              <h2 class="hero-title">Conference housing without the chaos.</h2>
+
+              <p class="hero-body">
+                Every year since 2009, the Chaplain’s Office, in collaboration with the Yale Muslim Students Association,
+                hosts the Ivy Muslim Conference (IMC), an overnight gathering for Muslim students from the Ivy League and beyond.
+              </p>
+              <p class="hero-body">
+                As attendance has grown to 300+ students from 20+ schools, the most time-consuming task for organizers has become
+                housing: matching attendees to hosts under capacity constraints, honoring pre-arranged matches, and emailing assignments manually.
+              </p>
+              <p class="hero-body">
+                The IMC Conference Housing Portal automates this process so organizers can spend less time in spreadsheets and more time
+                building a meaningful experience for attendees.
+              </p>
+
+              <div class="hero-cta-row">
+                <button id="hero-login-cta" type="button" class="btn-primary">
+                  Log in to the portal
+                </button>
+                <button type="button" class="btn-ghost"
+                  onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth', block:'start'})">
+                  Learn how it works
+                </button>
+              </div>
+
+              <div class="hero-stats-row">
+                <div class="hero-stat-pill">
+                  <span class="hero-stat-label">Since</span>
+                  <span class="hero-stat-value">2009</span>
+                </div>
+                <div class="hero-stat-pill">
+                  <span class="hero-stat-label">Last year</span>
+                  <span class="hero-stat-value">300+ attendees</span>
+                </div>
+                <div class="hero-stat-pill">
+                  <span class="hero-stat-label">Schools</span>
+                  <span class="hero-stat-value">20+ campuses</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section id="how-it-works" class="snap-section">
+      <div class="main">
+        <section class="card card-section how-centered">
+          <h2 class="section-heading">How it works</h2>
+          <div class="steps-grid">
+            <div class="step-item">
+              <div class="step-badge">1</div>
+              <h3>Upload your data</h3>
+              <p>
+                Organizers upload host and attendee spreadsheets, plus an optional prematches file
+                for already agreed-upon pairings.
+              </p>
+            </div>
+
+            <div class="step-item">
+              <div class="step-badge">2</div>
+              <h3>Run the matcher</h3>
+              <p>
+                The system matches attendees to available hosts using gender as the default criterion,
+                with options to incorporate school, class year, and related majors.
+              </p>
+            </div>
+
+            <div class="step-item">
+              <div class="step-badge">3</div>
+              <h3>Review &amp; share assignments</h3>
+              <p>
+                Housing assignments are stored in the database, visible to hosts via the portal,
+                and exported as a spreadsheet for quick email distribution.
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section id="results" class="snap-section">
+      <div class="main">
+        <section id="result" class="result" hidden>
+          <!-- stacked layout: Hostees card above Community card -->
+          <div class="layout-stack">
+            <div class="card">
+              <h2 id="host-name" class="host-name"></h2>
+              <h3 class="section-title">Hostees</h3>
+              <div id="hostees-list" class="hostees-list"></div>
+            </div>
+
+            <aside class="card card-friends">
+              <h3 class="section-title">Connect with your IMC community</h3>
+              <p class="hint hint--small">
+                Wave at people to connect. When both of you wave, you become a Match.
+              </p>
+
+              <div class="sp-filter-group">
+                <button type="button" class="sp-filter sp-filter--active" data-friend-filter="all">All</button>
+                <button type="button" class="sp-filter" data-friend-filter="friend">Matches</button>
+                <button type="button" class="sp-filter" data-friend-filter="requestedYou">Waved at you</button>
+              </div>
+
+              <div id="friends-list" class="sp-friends-list"></div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="result-empty" class="card card-section result-empty">
+          <h2 class="section-heading">Your housing assignment</h2>
+          <p class="hint">
+            Log in to view your host and hostee information.
+          </p>
+        </section>
+      </div>
+    </section>
+
+  </main>
+
+  <button id="feedback-open" class="feedback-fab" type="button">Feedback</button>
+
+  <div id="feedback-overlay" class="feedback-overlay" hidden>
+    <div class="feedback-modal" role="dialog" aria-modal="true" aria-labelledby="feedback-title">
+      <div class="feedback-header">
+        <div>
+          <h2 class="feedback-title" id="feedback-title">Help improve the portal</h2>
+          <p class="feedback-subtext">
+            Share a bug, idea, or anything that felt confusing. This goes to the organizing team.
+          </p>
+        </div>
+        <button id="feedback-close" class="feedback-close" type="button" aria-label="Close">
+          &times;
+        </button>
+      </div>
+
+      <div class="pill-group pill-group--tight">
+        <button type="button" class="pill pill--small pill--active" data-feedback-type="idea">Idea</button>
+        <button type="button" class="pill pill--small" data-feedback-type="bug">Bug</button>
+        <button type="button" class="pill pill--small" data-feedback-type="confusing">Confusing</button>
+        <button type="button" class="pill pill--small" data-feedback-type="other">Other</button>
+      </div>
+
+      <form id="feedback-form" class="feedback-form">
+        <label class="label" for="feedback-message">Your feedback</label>
+        <textarea
+          id="feedback-message"
+          rows="4"
+          required
+          placeholder="Tell us what worked, what didn’t, or what you’d love to see…"
+        ></textarea>
+
+        <label class="label label--sm" for="feedback-email">
+          Optional contact email
+          <span class="label-note">(if you’d like a reply)</span>
+        </label>
+        <input id="feedback-email" type="email" placeholder="first.last@yale.edu" />
+
+        <div class="feedback-actions">
+          <button id="feedback-cancel" type="button" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-secondary">Send feedback</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer__inner">
+      <div class="footer__left">
+        <strong>Ivy Muslim Conference @ Yale</strong>
+        <span class="footer__muted">· Housing Portal</span>
+      </div>
+      <div class="footer__right">
+        <span class="footer__muted">Need help?</span>
+        <span class="footer__muted">Use the Feedback button.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/portal.js') }}"></script>
+</body>
+</html>

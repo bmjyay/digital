@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Login — IMC Housing</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/portal.css') }}">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__brand">Ivy Muslim Conference @ Yale</div>
+    <div class="nav__spacer"></div>
+    <a class="nav__link" href="{{ url_for('portal') }}">Portal</a>
+  </nav>
+
+  <main class="container">
+    <form class="card" method="post">
+      <h2 style="margin: 0 0 12px;">Admin Login</h2>
+      <label for="password" class="label">Password</label>
+      <div class="row">
+        <input id="password" name="password" type="password" placeholder="Enter admin password" required />
+        <button type="submit">Login</button>
+      </div>
+      {% if error %}
+        <p class="status error" style="margin-top:12px;">{{ error }}</p>
+      {% endif %}
+    </form>
+  </main>
+</body>
+</html>
