@@ -192,7 +192,7 @@ button, input, textarea, select {
   font-size: 13px;
   color: #e5e7eb;
   text-decoration: none;
-  padding: 8px 10px;
+  padding: 7px 12px;
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.5);
   background: transparent;
@@ -205,8 +205,7 @@ button, input, textarea, select {
   background: transparent;
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.5);
-  padding-inline: 12px;
-  padding-block: 6px;
+  padding: 7px 12px;
   font-size: 13px;
   cursor: pointer;
   color: #e5e7eb;
