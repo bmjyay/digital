@@ -106,6 +106,9 @@ def find_hostee(name, hostees):
 def pre_match(host_name, hostee_name, hosts, hostees):
     host = find_host(host_name, hosts)
     hostee = find_hostee(hostee_name, hostees)
+    if host is None or hostee is None:
+        print(f"Warning: skipping pre_match({host_name!r}, {hostee_name!r}) — name not found in CSV")
+        return
     host.hostees.append(hostee)
     hostee.host = host
     hostee.pre_matched = True
