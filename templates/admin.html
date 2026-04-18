@@ -10,18 +10,11 @@
 <body>
   <nav class="nav">
     <a href="{{ url_for('portal') }}" class="nav__brand">
-      <img
-        src="{{ url_for('static', filename='images/imc-logo.jpg') }}"
-        alt="Ivy Muslim Conference"
-        class="nav__logo"
-      />
+      <img src="{{ url_for('static', filename='images/imc-logo.jpg') }}" alt="Ivy Muslim Conference" class="nav__logo" />
       <span class="nav__brand-text">Ivy Muslim Conference @ Yale</span>
     </a>
-
     <div class="nav__spacer"></div>
-
     <a class="nav__link" href="{{ url_for('portal') }}">Portal</a>
-
     <form action="{{ url_for('admin_logout') }}" method="post" style="margin:0;">
       <button class="nav__link nav__link--light" type="submit">Logout</button>
     </form>
@@ -29,80 +22,184 @@
 
   <main class="container">
 
+    <!-- Data Upload -->
     <section class="card">
       <h2 class="section-heading" style="margin-top:0;">Data Upload</h2>
-      <p class="hint" style="margin-top:6px;">
-        Upload <b>hosts.csv</b> and <b>hostees.csv</b>. On upload, the database will be cleared and repopulated.
-      </p>
-
+      <p class="hint" style="margin-top:6px;">Upload <b>hosts.csv</b> and <b>hostees.csv</b>. The database will be cleared and repopulated.</p>
       <div class="grid-2">
         <div>
           <label class="label" for="hostsCsv">hosts.csv</label>
           <input id="hostsCsv" type="file" accept=".csv" />
         </div>
-
         <div>
           <label class="label" for="hosteesCsv">hostees.csv</label>
           <input id="hosteesCsv" type="file" accept=".csv" />
         </div>
       </div>
-
       <div style="margin-top:12px;">
         <button id="btnUpload" type="button" class="btn-secondary">Upload</button>
       </div>
-
       <p id="uploadStatus" class="status" style="margin-top:12px;"></p>
     </section>
 
+    <!-- Matches -->
     <section class="card" style="margin-top:16px;">
       <h2 class="section-heading" style="margin-top:0;">Matches</h2>
-      <p class="hint" style="margin-top:6px;">
-        Upload <b>prematches.csv</b>, then run <b>Match</b>. After matching, download <b>final.csv</b> and <b>matches.txt</b>.
-        You can also clear matches, which updates the database.
-      </p>
-
+      <p class="hint" style="margin-top:6px;">Upload <b>prematches.csv</b>, then run <b>Match</b>. Download results after matching.</p>
       <div class="grid-2">
         <div>
           <label class="label" for="prematchesCsv">prematches.csv</label>
           <input id="prematchesCsv" type="file" accept=".csv" />
         </div>
       </div>
-
       <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
         <button id="btnMatch" type="button" class="btn-secondary">Match</button>
         <a id="btnDownloadFinal" class="btn-secondary" href="{{ url_for('admin_download_final') }}" download hidden>Download final.csv</a>
         <a id="btnDownloadMatches" class="btn-secondary" href="{{ url_for('admin_download_matches') }}" download hidden>Download matches.txt</a>
         <button id="btnClear" type="button" class="btn-danger">Clear Matches</button>
       </div>
-
       <p id="matchStatus" class="status" style="margin-top:12px;"></p>
     </section>
 
+    <!-- Tags Management -->
+    <section class="card" style="margin-top:16px;">
+      <h2 class="section-heading" style="margin-top:0;">Tags</h2>
+      <p class="hint" style="margin-top:6px;">Create tags that hosts can select as preferences for their hostees.</p>
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <input id="newTagInput" type="text" placeholder="Tag name (e.g. Early riser, Quiet household)" style="flex:1; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px;" />
+        <button id="btnAddTag" type="button" class="btn-secondary">Add Tag</button>
+      </div>
+      <div id="tagsList" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;"></div>
+      <p id="tagsStatus" class="status" style="margin-top:8px;"></p>
+    </section>
+
+    <!-- Recommendations -->
+    <section class="card" style="margin-top:16px;">
+      <h2 class="section-heading" style="margin-top:0;">Explore Recommendations</h2>
+      <p class="hint" style="margin-top:6px;">Add cafes, restaurants, and activities shown on the Explore page.</p>
+      <div class="grid-2" style="margin-top:10px;">
+        <div>
+          <label class="label" for="recName">Name</label>
+          <input id="recName" type="text" placeholder="Atticus Bookstore Café" style="width:100%; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px;" />
+        </div>
+        <div>
+          <label class="label" for="recCategory">Category</label>
+          <select id="recCategory" style="width:100%; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px;">
+            <option value="cafe">Cafe</option>
+            <option value="restaurant">Restaurant</option>
+            <option value="activity">Activity</option>
+            <option value="shopping">Shopping</option>
+            <option value="prayer">Prayer</option>
+            <option value="general">General</option>
+          </select>
+        </div>
+        <div>
+          <label class="label" for="recAddress">Address</label>
+          <input id="recAddress" type="text" placeholder="1082 Chapel St, New Haven, CT" style="width:100%; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px;" />
+        </div>
+        <div>
+          <label class="label" for="recUrl">URL (optional)</label>
+          <input id="recUrl" type="text" placeholder="https://..." style="width:100%; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px;" />
+        </div>
+      </div>
+      <div style="margin-top:8px;">
+        <label class="label" for="recDesc">Description</label>
+        <textarea id="recDesc" rows="2" placeholder="Great pour-over coffee and a cozy reading nook…" style="width:100%; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px; resize:vertical;"></textarea>
+      </div>
+      <div style="margin-top:10px;">
+        <button id="btnAddRec" type="button" class="btn-secondary">Add Recommendation</button>
+      </div>
+      <p id="recStatus" class="status" style="margin-top:8px;"></p>
+      <div id="recList" style="margin-top:12px; display:flex; flex-direction:column; gap:8px;"></div>
+    </section>
+
+    <!-- Itinerary -->
+    <section class="card" style="margin-top:16px;">
+      <h2 class="section-heading" style="margin-top:0;">Itinerary</h2>
+      <p class="hint" style="margin-top:6px;">Add conference schedule events shown on the Itinerary page.</p>
+      <div class="grid-2" style="margin-top:10px;">
+        <div>
+          <label class="label" for="itinTitle">Title</label>
+          <input id="itinTitle" type="text" placeholder="Friday Night Dinner" style="width:100%; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px;" />
+        </div>
+        <div>
+          <label class="label" for="itinCategory">Category</label>
+          <select id="itinCategory" style="width:100%; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px;">
+            <option value="general">General</option>
+            <option value="session">Session</option>
+            <option value="prayer">Prayer</option>
+            <option value="food">Food</option>
+            <option value="social">Social</option>
+          </select>
+        </div>
+        <div>
+          <label class="label" for="itinStart">Start Time</label>
+          <input id="itinStart" type="datetime-local" style="width:100%; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px;" />
+        </div>
+        <div>
+          <label class="label" for="itinEnd">End Time</label>
+          <input id="itinEnd" type="datetime-local" style="width:100%; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px;" />
+        </div>
+        <div>
+          <label class="label" for="itinLocation">Location</label>
+          <input id="itinLocation" type="text" placeholder="Woolsey Hall, Yale" style="width:100%; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px;" />
+        </div>
+      </div>
+      <div style="margin-top:8px;">
+        <label class="label" for="itinDesc">Description</label>
+        <textarea id="itinDesc" rows="2" placeholder="Optional details…" style="width:100%; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px; resize:vertical;"></textarea>
+      </div>
+      <div style="margin-top:10px;">
+        <button id="btnAddItin" type="button" class="btn-secondary">Add Event</button>
+      </div>
+      <p id="itinStatus" class="status" style="margin-top:8px;"></p>
+      <div id="itinList" style="margin-top:12px; display:flex; flex-direction:column; gap:8px;"></div>
+    </section>
+
+    <!-- Host Locations -->
+    <section class="card" style="margin-top:16px;">
+      <h2 class="section-heading" style="margin-top:0;">Host Locations (Map)</h2>
+      <p class="hint" style="margin-top:6px;">Set latitude/longitude for hosts so they appear on the member map.</p>
+      <div class="grid-2" style="margin-top:10px;">
+        <div>
+          <label class="label" for="locHostId">Host ID</label>
+          <input id="locHostId" type="number" placeholder="h_id" style="width:100%; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px;" />
+        </div>
+        <div>
+          <label class="label" for="locAddress">Address</label>
+          <input id="locAddress" type="text" placeholder="12 Elm St, New Haven, CT" style="width:100%; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px;" />
+        </div>
+        <div>
+          <label class="label" for="locLat">Latitude</label>
+          <input id="locLat" type="number" step="any" placeholder="41.3083" style="width:100%; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px;" />
+        </div>
+        <div>
+          <label class="label" for="locLng">Longitude</label>
+          <input id="locLng" type="number" step="any" placeholder="-72.9279" style="width:100%; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:13px;" />
+        </div>
+      </div>
+      <div style="margin-top:10px;">
+        <button id="btnSetLocation" type="button" class="btn-secondary">Set Location</button>
+      </div>
+      <p id="locStatus" class="status" style="margin-top:8px;"></p>
+    </section>
+
+    <!-- Feedback -->
     <section class="card" style="margin-top:16px;">
       <div class="admin-row">
         <div>
           <h2 class="section-heading" style="margin-top:0;">Feedback</h2>
-          <p class="hint" style="margin-top:6px;">
-            This section fetches feedback submitted from the portal.
-          </p>
+          <p class="hint" style="margin-top:6px;">Feedback submitted from the portal.</p>
         </div>
         <div class="admin-actions">
           <button id="btnRefreshFeedback" type="button" class="btn-secondary">Refresh</button>
         </div>
       </div>
-
       <p id="feedbackStatus" class="status" style="margin-top:12px;"></p>
-
       <div class="table-wrap" aria-label="Feedback table">
         <table class="table">
           <thead>
-            <tr>
-              <th>Date</th>
-              <th>Category</th>
-              <th>Content</th>
-              <th>Name</th>
-              <th>Email</th>
-            </tr>
+            <tr><th>Date</th><th>Category</th><th>Content</th><th>Name</th><th>Email</th></tr>
           </thead>
           <tbody id="feedbackTbody"></tbody>
         </table>

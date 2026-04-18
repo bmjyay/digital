@@ -4,7 +4,6 @@ import sys
 from dotenv import load_dotenv
 import os
 from datetime import datetime
-import random
 
 load_dotenv()
 
@@ -489,3 +488,223 @@ class IMCDB:
 
     def close(self):
         self.conn.close()
+
+    # ── Messaging ──────────────────────────────────────────────────────────
+
+    def send_message(self, from_u_id, to_u_id, content):
+        self.cursor.execute(
+            "INSERT INTO messages (from_u_id, to_u_id, content, sent_at) VALUES (%s, %s, %s, %s)",
+            (from_u_id, to_u_id, content, datetime.now()),
+        )
+        return {"ok": True}
+
+    def get_thread(self, u_id, other_u_id):
+        self.cursor.execute(
+            """SELECT m.m_id, m.from_u_id, m.to_u_id, m.content, m.sent_at, m.read_at
+               FROM messages m
+               WHERE (m.from_u_id = %s AND m.to_u_id = %s)
+                  OR (m.from_u_id = %s AND m.to_u_id = %s)
+               ORDER BY m.sent_at ASC""",
+            (u_id, other_u_id, other_u_id, u_id),
+        )
+        rows = self.cursor.fetchall()
+        return [
+            {
+                "m_id": r[0],
+                "from_u_id": r[1],
+                "to_u_id": r[2],
+                "content": r[3],
+                "sent_at": r[4].isoformat(sep=" ", timespec="seconds") if r[4] else "",
+                "read": r[5] is not None,
+            }
+            for r in rows
+        ]
+
+    def get_conversations(self, u_id):
+        self.cursor.execute(
+            """SELECT other_id, MAX(sent_at) AS last_at,
+                      SUM(CASE WHEN to_u_id = %s AND read_at IS NULL THEN 1 ELSE 0 END) AS unread
+               FROM (
+                 SELECT CASE WHEN from_u_id = %s THEN to_u_id ELSE from_u_id END AS other_id,
+                        sent_at, to_u_id, read_at
+                 FROM messages
+                 WHERE from_u_id = %s OR to_u_id = %s
+               ) t
+               GROUP BY other_id
+               ORDER BY last_at DESC""",
+            (u_id, u_id, u_id, u_id),
+        )
+        rows = self.cursor.fetchall()
+        result = []
+        for r in rows:
+            other_id = r[0]
+            self.cursor.execute(
+                "SELECT hosts.name, hosts.email FROM users JOIN hosts ON users.h_id = hosts.h_id WHERE users.u_id = %s",
+                (other_id,),
+            )
+            person = self.cursor.fetchone()
+            result.append({
+                "u_id": other_id,
+                "name": person[0] if person else "",
+                "email": person[1] if person else "",
+                "last_at": r[1].isoformat(sep=" ", timespec="seconds") if r[1] else "",
+                "unread": int(r[2]),
+            })
+        return result
+
+    def mark_read(self, u_id, other_u_id):
+        self.cursor.execute(
+            "UPDATE messages SET read_at = %s WHERE to_u_id = %s AND from_u_id = %s AND read_at IS NULL",
+            (datetime.now(), u_id, other_u_id),
+        )
+
+    def unread_count(self, u_id):
+        self.cursor.execute(
+            "SELECT COUNT(*) FROM messages WHERE to_u_id = %s AND read_at IS NULL",
+            (u_id,),
+        )
+        return self.cursor.fetchone()[0]
+
+    # ── Tags ───────────────────────────────────────────────────────────────
+
+    def get_all_tags(self):
+        self.cursor.execute("SELECT tag_id, name FROM tags ORDER BY name")
+        return [{"tag_id": r[0], "name": r[1]} for r in self.cursor.fetchall()]
+
+    def add_tag(self, name):
+        try:
+            self.cursor.execute("INSERT INTO tags (name) VALUES (%s)", (name,))
+            return {"tag_id": self.cursor.lastrowid, "name": name}
+        except Exception:
+            return {"error": "Tag already exists."}
+
+    def delete_tag(self, tag_id):
+        self.cursor.execute("DELETE FROM host_tags WHERE tag_id = %s", (tag_id,))
+        self.cursor.execute("DELETE FROM tags WHERE tag_id = %s", (tag_id,))
+
+    def get_host_tags(self, h_id):
+        self.cursor.execute(
+            """SELECT t.tag_id, t.name FROM tags t
+               JOIN host_tags ht ON t.tag_id = ht.tag_id
+               WHERE ht.h_id = %s""",
+            (h_id,),
+        )
+        return [{"tag_id": r[0], "name": r[1]} for r in self.cursor.fetchall()]
+
+    def set_host_tags(self, h_id, tag_ids):
+        self.cursor.execute("DELETE FROM host_tags WHERE h_id = %s", (h_id,))
+        for tag_id in tag_ids:
+            self.cursor.execute(
+                "INSERT INTO host_tags (h_id, tag_id) VALUES (%s, %s)", (h_id, tag_id)
+            )
+
+    def get_all_hosts_with_tags(self):
+        self.cursor.execute("SELECT h_id, name, email, address, lat, lng FROM hosts")
+        hosts = self.cursor.fetchall()
+        result = []
+        for h in hosts:
+            tags = self.get_host_tags(h[0])
+            result.append({
+                "h_id": h[0], "name": h[1], "email": h[2],
+                "address": h[3], "lat": float(h[4]) if h[4] else None,
+                "lng": float(h[5]) if h[5] else None,
+                "tags": [t["name"] for t in tags],
+            })
+        return result
+
+    # ── Friend hosting view ────────────────────────────────────────────────
+
+    def get_friends_hosting(self, u_id):
+        friends = self.fetch_friends(u_id, "friends")
+        result = []
+        for friend in friends:
+            self.cursor.execute("SELECT h_id FROM users WHERE u_id = %s", (friend["u_id"],))
+            row = self.cursor.fetchone()
+            if not row:
+                continue
+            h_id = row[0]
+            self.cursor.execute("SELECT name FROM hosts WHERE h_id = %s", (h_id,))
+            host_row = self.cursor.fetchone()
+            if not host_row:
+                continue
+            hostees = self.get_hostees(host_row[0])
+            hostee_details = []
+            for name in hostees:
+                p = self.find_hostee(name)
+                if "error" not in p:
+                    hostee_details.append({"name": p["name"], "email": p["email"]})
+            result.append({"friend": friend, "hostees": hostee_details})
+        return result
+
+    # ── Recommendations ────────────────────────────────────────────────────
+
+    def get_recommendations(self):
+        self.cursor.execute(
+            "SELECT r_id, name, category, address, description, url FROM recommendations ORDER BY category, name"
+        )
+        return [
+            {"r_id": r[0], "name": r[1], "category": r[2],
+             "address": r[3], "description": r[4], "url": r[5]}
+            for r in self.cursor.fetchall()
+        ]
+
+    def add_recommendation(self, name, category, address, description, url):
+        self.cursor.execute(
+            "INSERT INTO recommendations (name, category, address, description, url) VALUES (%s, %s, %s, %s, %s)",
+            (name, category, address, description, url),
+        )
+        return {"r_id": self.cursor.lastrowid}
+
+    def delete_recommendation(self, r_id):
+        self.cursor.execute("DELETE FROM recommendations WHERE r_id = %s", (r_id,))
+
+    # ── Itinerary ──────────────────────────────────────────────────────────
+
+    def get_itinerary(self):
+        self.cursor.execute(
+            "SELECT i_id, title, description, location, start_time, end_time, category FROM itinerary ORDER BY start_time"
+        )
+        rows = self.cursor.fetchall()
+        return [
+            {
+                "i_id": r[0], "title": r[1], "description": r[2],
+                "location": r[3],
+                "start_time": r[4].isoformat(sep=" ", timespec="minutes") if r[4] else "",
+                "end_time": r[5].isoformat(sep=" ", timespec="minutes") if r[5] else "",
+                "category": r[6],
+            }
+            for r in rows
+        ]
+
+    def add_itinerary_item(self, title, description, location, start_time, end_time, category):
+        self.cursor.execute(
+            "INSERT INTO itinerary (title, description, location, start_time, end_time, category) VALUES (%s, %s, %s, %s, %s, %s)",
+            (title, description, location, start_time, end_time, category),
+        )
+        return {"i_id": self.cursor.lastrowid}
+
+    def delete_itinerary_item(self, i_id):
+        self.cursor.execute("DELETE FROM itinerary WHERE i_id = %s", (i_id,))
+
+    # ── Map / locations ────────────────────────────────────────────────────
+
+    def get_map_locations(self):
+        self.cursor.execute(
+            "SELECT h_id, name, address, lat, lng FROM hosts WHERE lat IS NOT NULL AND lng IS NOT NULL"
+        )
+        rows = self.cursor.fetchall()
+        result = []
+        for r in rows:
+            hostees = self.get_hostees(r[1])
+            result.append({
+                "h_id": r[0], "name": r[1], "address": r[2],
+                "lat": float(r[3]), "lng": float(r[4]),
+                "hostees": hostees,
+            })
+        return result
+
+    def set_host_location(self, h_id, address, lat, lng):
+        self.cursor.execute(
+            "UPDATE hosts SET address = %s, lat = %s, lng = %s WHERE h_id = %s",
+            (address, lat, lng, h_id),
+        )
