@@ -572,9 +572,240 @@
 
   clearResult();
   clearDirectoryState();
-  fetchCurrentUser();
+  fetchCurrentUser().then(() => {
+    if (currentUser?.u_id) {
+      initUserFeatures(currentUser);
+    }
+  });
+
+  window._portalSetCurrentUser = (user) => {
+    currentUser = user;
+    if (user?.u_id) initUserFeatures(user);
+  };
 
   console.log("portal.js loaded");
+})();
+
+// ── Tags, Messaging, Friend Hosting, Map ─────────────────────────────────────
+(function () {
+  const $ = (id) => document.getElementById(id);
+
+  let me = null;
+  let mapInstance = null;
+  let activeMsgThread = null;
+  let msgPollTimer = null;
+
+  async function getMe() {
+    try {
+      const r = await fetch('/api/me');
+      if (!r.ok) return null;
+      return r.json();
+    } catch { return null; }
+  }
+
+  // ── Tags ──────────────────────────────────────────────────────────────────
+
+  async function initTags(h_id) {
+    const grid = $('tags-grid');
+    if (!grid) return;
+    const [allRes, myRes] = await Promise.all([
+      fetch('/api/tags').then(r => r.json()).catch(() => ({ tags: [] })),
+      fetch('/api/host/tags').then(r => r.json()).catch(() => ({ tags: [] })),
+    ]);
+    const all = allRes.tags || [];
+    const mine = new Set((myRes.tags || []).map(t => t.tag_id));
+    grid.innerHTML = all.length
+      ? all.map(t => `<span class="tag-pill ${mine.has(t.tag_id) ? 'selected' : ''}" data-tag="${t.tag_id}">${esc(t.name)}</span>`).join('')
+      : '<span class="hint" style="font-size:12px;">No tags yet — ask an admin to add some.</span>';
+    grid.querySelectorAll('.tag-pill').forEach(el => {
+      el.addEventListener('click', () => el.classList.toggle('selected'));
+    });
+  }
+
+  async function saveTags() {
+    const grid = $('tags-grid');
+    const status = $('tags-status');
+    if (!grid || !status) return;
+    const ids = [...grid.querySelectorAll('.tag-pill.selected')].map(el => Number(el.dataset.tag));
+    try {
+      await fetch('/api/host/tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tag_ids: ids }),
+      });
+      status.textContent = 'Saved!';
+      setTimeout(() => { status.textContent = ''; }, 2000);
+    } catch {
+      status.textContent = 'Failed to save.';
+    }
+  }
+
+  $('save-tags-btn')?.addEventListener('click', saveTags);
+
+  // ── Friend hosting ─────────────────────────────────────────────────────────
+
+  async function loadFriendHosting() {
+    const section = $('friend-hosting-section');
+    const list = $('friend-hosting-list');
+    if (!section || !list) return;
+    try {
+      const data = await fetch('/api/friend/hosting').then(r => r.json());
+      const hosting = data.hosting || [];
+      if (!hosting.length) { section.hidden = true; return; }
+      section.hidden = false;
+      list.innerHTML = hosting.map(h => `
+        <div class="friend-host-item">
+          <div class="friend-host-name">${esc(h.friend.name)}</div>
+          <div class="friend-host-hostees">
+            ${h.hostees.length
+              ? 'Hosting: ' + h.hostees.map(e => esc(e.name)).join(', ')
+              : 'No hostees yet'}
+          </div>
+        </div>`).join('');
+    } catch {
+      section.hidden = true;
+    }
+  }
+
+  // ── Messaging ─────────────────────────────────────────────────────────────
+
+  async function loadConversations() {
+    const sidebar = $('msg-sidebar');
+    if (!sidebar || !me) return;
+    try {
+      const data = await fetch('/api/messages').then(r => r.json());
+      const convos = data.conversations || [];
+      if (!convos.length) {
+        sidebar.innerHTML = '<div class="msg-sidebar-empty">No conversations yet.</div>';
+        return;
+      }
+      sidebar.innerHTML = convos.map(c => `
+        <div class="msg-convo ${activeMsgThread === c.u_id ? 'active' : ''}" data-uid="${c.u_id}">
+          <div class="msg-convo-name">${esc(c.name)}${c.unread ? `<span class="msg-convo-unread">${c.unread}</span>` : ''}</div>
+          <div class="msg-convo-time">${c.last_at}</div>
+        </div>`).join('');
+      sidebar.querySelectorAll('.msg-convo').forEach(el => {
+        el.addEventListener('click', () => openThread(Number(el.dataset.uid), el));
+      });
+      updateUnreadBadge();
+    } catch {}
+  }
+
+  async function updateUnreadBadge() {
+    const badge = $('unread-badge');
+    if (!badge) return;
+    try {
+      const data = await fetch('/api/messages/unread').then(r => r.json());
+      const count = data.count || 0;
+      badge.textContent = count;
+      badge.hidden = count === 0;
+    } catch {}
+  }
+
+  async function openThread(otherUid, convoEl) {
+    activeMsgThread = otherUid;
+    document.querySelectorAll('.msg-convo').forEach(el => el.classList.remove('active'));
+    convoEl?.classList.add('active');
+
+    const empty = $('msg-empty');
+    const msgs = $('msg-messages');
+    const composer = $('msg-composer');
+    if (!msgs || !composer || !empty) return;
+
+    empty.hidden = true;
+    msgs.hidden = false;
+    composer.hidden = false;
+
+    await refreshThread(otherUid);
+
+    clearInterval(msgPollTimer);
+    msgPollTimer = setInterval(() => refreshThread(otherUid), 4000);
+  }
+
+  async function refreshThread(otherUid) {
+    const msgs = $('msg-messages');
+    if (!msgs || !me) return;
+    try {
+      const data = await fetch(`/api/messages/${otherUid}`).then(r => r.json());
+      const messages = data.messages || [];
+      const atBottom = msgs.scrollHeight - msgs.scrollTop <= msgs.clientHeight + 40;
+      msgs.innerHTML = messages.length
+        ? messages.map(m => {
+            const mine = m.from_u_id === me.u_id;
+            return `<div>
+              <div class="msg-bubble msg-bubble--${mine ? 'me' : 'them'}">${esc(m.content)}</div>
+              <div class="msg-bubble-time" style="text-align:${mine ? 'right' : 'left'};">${m.sent_at}</div>
+            </div>`;
+          }).join('')
+        : '<div style="color:var(--muted);font-size:13px;padding:8px;">No messages yet. Say hello!</div>';
+      if (atBottom) msgs.scrollTop = msgs.scrollHeight;
+      await loadConversations();
+    } catch {}
+  }
+
+  async function sendMessage() {
+    const input = $('msg-input');
+    if (!input || !activeMsgThread) return;
+    const content = input.value.trim();
+    if (!content) return;
+    input.value = '';
+    try {
+      await fetch(`/api/messages/${activeMsgThread}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
+      });
+      await refreshThread(activeMsgThread);
+    } catch {}
+  }
+
+  $('msg-send')?.addEventListener('click', sendMessage);
+  $('msg-input')?.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+
+  // ── Map ───────────────────────────────────────────────────────────────────
+
+  async function initMap() {
+    const mapEl = $('map');
+    if (!mapEl || typeof L === 'undefined') return;
+    mapInstance = L.map('map').setView([41.3083, -72.9279], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19,
+    }).addTo(mapInstance);
+    try {
+      const data = await fetch('/api/map/locations').then(r => r.json());
+      const locs = data.locations || [];
+      if (!locs.length) {
+        mapEl.insertAdjacentHTML('afterend', '<p class="hint" style="margin-top:8px;">No host locations set yet — admins can add them via the Admin Panel.</p>');
+        return;
+      }
+      locs.forEach(loc => {
+        const popup = `<b>${esc(loc.name)}</b>${loc.address ? '<br>' + esc(loc.address) : ''}${loc.hostees.length ? '<br><small>Hosting: ' + loc.hostees.map(esc).join(', ') + '</small>' : ''}`;
+        L.marker([loc.lat, loc.lng]).addTo(mapInstance).bindPopup(popup);
+      });
+    } catch {}
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+
+  window.initUserFeatures = async function(user) {
+    me = user;
+    if (!me?.u_id) return;
+    await initTags(me.h_id);
+    await loadFriendHosting();
+    await loadConversations();
+  };
+
+  // Map loads regardless of login
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMap);
+  } else {
+    initMap();
+  }
+
+  function esc(s) {
+    return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
 })();
 
 (function () {
