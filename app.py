@@ -396,6 +396,172 @@ def create_app():
     def admin_download_matches_redirect():
         return redirect(url_for("admin_download_matches"))
 
+    # ── Itinerary & Explore pages ──────────────────────────────────────────
+
+    @app.get("/itinerary")
+    def itinerary_page():
+        return render_template("itinerary.html")
+
+    @app.get("/explore")
+    def explore_page():
+        return render_template("explore.html")
+
+    # ── Messaging API ──────────────────────────────────────────────────────
+
+    @app.get("/api/messages")
+    def get_conversations():
+        u_id = session.get("user_u_id")
+        if not u_id:
+            return jsonify({"error": "Must be signed in."}), 401
+        return jsonify({"conversations": db.get_conversations(u_id)}), 200
+
+    @app.get("/api/messages/unread")
+    def get_unread():
+        u_id = session.get("user_u_id")
+        if not u_id:
+            return jsonify({"count": 0}), 200
+        return jsonify({"count": db.unread_count(u_id)}), 200
+
+    @app.get("/api/messages/<int:other_u_id>")
+    def get_thread(other_u_id):
+        u_id = session.get("user_u_id")
+        if not u_id:
+            return jsonify({"error": "Must be signed in."}), 401
+        db.mark_read(u_id, other_u_id)
+        return jsonify({"messages": db.get_thread(u_id, other_u_id)}), 200
+
+    @app.post("/api/messages/<int:other_u_id>")
+    def send_message(other_u_id):
+        u_id = session.get("user_u_id")
+        if not u_id:
+            return jsonify({"error": "Must be signed in."}), 401
+        data = request.get_json(silent=True) or {}
+        content = (data.get("content") or "").strip()
+        if not content:
+            return jsonify({"error": "Empty message"}), 400
+        return jsonify(db.send_message(u_id, other_u_id, content)), 200
+
+    # ── Tags API ───────────────────────────────────────────────────────────
+
+    @app.get("/api/tags")
+    def get_tags():
+        return jsonify({"tags": db.get_all_tags()}), 200
+
+    @app.get("/api/host/tags")
+    def get_my_tags():
+        h_id = session.get("user_h_id")
+        if not h_id:
+            return jsonify({"error": "Must be signed in."}), 401
+        return jsonify({"tags": db.get_host_tags(h_id)}), 200
+
+    @app.post("/api/host/tags")
+    def set_my_tags():
+        h_id = session.get("user_h_id")
+        if not h_id:
+            return jsonify({"error": "Must be signed in."}), 401
+        data = request.get_json(silent=True) or {}
+        tag_ids = data.get("tag_ids", [])
+        db.set_host_tags(h_id, tag_ids)
+        return jsonify({"ok": True}), 200
+
+    @app.get("/api/hosts/tags")
+    def get_all_hosts_tags():
+        return jsonify({"hosts": db.get_all_hosts_with_tags()}), 200
+
+    # ── Friend hosting API ─────────────────────────────────────────────────
+
+    @app.get("/api/friend/hosting")
+    def friend_hosting():
+        u_id = session.get("user_u_id")
+        if not u_id:
+            return jsonify({"error": "Must be signed in."}), 401
+        return jsonify({"hosting": db.get_friends_hosting(u_id)}), 200
+
+    # ── Recommendations API ────────────────────────────────────────────────
+
+    @app.get("/api/recommendations")
+    def get_recommendations():
+        return jsonify({"recommendations": db.get_recommendations()}), 200
+
+    @app.post("/api/admin/recommendations")
+    def add_recommendation():
+        if not session.get("admin"):
+            return jsonify({"error": "Unauthorized"}), 401
+        data = request.get_json(silent=True) or {}
+        r = db.add_recommendation(
+            data.get("name", ""),
+            data.get("category", "general"),
+            data.get("address", ""),
+            data.get("description", ""),
+            data.get("url", ""),
+        )
+        return jsonify(r), 200
+
+    @app.delete("/api/admin/recommendations/<int:r_id>")
+    def delete_recommendation(r_id):
+        if not session.get("admin"):
+            return jsonify({"error": "Unauthorized"}), 401
+        db.delete_recommendation(r_id)
+        return jsonify({"ok": True}), 200
+
+    # ── Itinerary API ──────────────────────────────────────────────────────
+
+    @app.get("/api/itinerary")
+    def get_itinerary():
+        return jsonify({"itinerary": db.get_itinerary()}), 200
+
+    @app.post("/api/admin/itinerary")
+    def add_itinerary():
+        if not session.get("admin"):
+            return jsonify({"error": "Unauthorized"}), 401
+        data = request.get_json(silent=True) or {}
+        r = db.add_itinerary_item(
+            data.get("title", ""),
+            data.get("description", ""),
+            data.get("location", ""),
+            data.get("start_time") or None,
+            data.get("end_time") or None,
+            data.get("category", "general"),
+        )
+        return jsonify(r), 200
+
+    @app.delete("/api/admin/itinerary/<int:i_id>")
+    def delete_itinerary(i_id):
+        if not session.get("admin"):
+            return jsonify({"error": "Unauthorized"}), 401
+        db.delete_itinerary_item(i_id)
+        return jsonify({"ok": True}), 200
+
+    # ── Map API ────────────────────────────────────────────────────────────
+
+    @app.get("/api/map/locations")
+    def map_locations():
+        return jsonify({"locations": db.get_map_locations()}), 200
+
+    @app.post("/api/admin/host-location")
+    def set_host_location():
+        if not session.get("admin"):
+            return jsonify({"error": "Unauthorized"}), 401
+        data = request.get_json(silent=True) or {}
+        db.set_host_location(data.get("h_id"), data.get("address"), data.get("lat"), data.get("lng"))
+        return jsonify({"ok": True}), 200
+
+    # ── Admin: tags management ─────────────────────────────────────────────
+
+    @app.post("/api/admin/tags")
+    def admin_add_tag():
+        if not session.get("admin"):
+            return jsonify({"error": "Unauthorized"}), 401
+        data = request.get_json(silent=True) or {}
+        return jsonify(db.add_tag(data.get("name", "").strip())), 200
+
+    @app.delete("/api/admin/tags/<int:tag_id>")
+    def admin_delete_tag(tag_id):
+        if not session.get("admin"):
+            return jsonify({"error": "Unauthorized"}), 401
+        db.delete_tag(tag_id)
+        return jsonify({"ok": True}), 200
+
     return app
 
 if __name__ == "__main__":

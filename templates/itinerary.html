@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Itinerary — IMC Housing</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/portal.css') }}">
+  <style>
+    .itin-timeline { display: flex; flex-direction: column; gap: 0; margin-top: 16px; }
+    .itin-day { margin-bottom: 28px; }
+    .itin-day-heading {
+      font-size: 13px; font-weight: 800; letter-spacing: 0.08em;
+      text-transform: uppercase; color: #8b5cf6; margin: 0 0 12px;
+    }
+    .itin-item {
+      display: grid; grid-template-columns: 80px 1fr;
+      gap: 0 16px; padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .itin-item:last-child { border-bottom: none; }
+    .itin-time { font-size: 12px; color: var(--muted); font-weight: 700; padding-top: 2px; }
+    .itin-body {}
+    .itin-title { font-size: 15px; font-weight: 800; margin: 0 0 2px; }
+    .itin-desc { font-size: 13px; color: var(--muted); margin: 0 0 4px; line-height: 1.5; }
+    .itin-location { font-size: 12px; color: #8b5cf6; font-weight: 700; }
+    .cat-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 999px;
+      font-size: 11px; font-weight: 700; margin-left: 8px;
+      background: #fdf2f8; color: #be185d; border: 1px solid #fbcfe8;
+    }
+    .cat-badge--prayer { background: #f0fdf4; color: #166534; border-color: #86efac; }
+    .cat-badge--social { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .cat-badge--session { background: #fdf4ff; color: #7e22ce; border-color: #e9d5ff; }
+    .cat-badge--food { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+    .cat-badge--general { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
+    .empty-state { text-align: center; padding: 48px 16px; color: var(--muted); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="{{ url_for('portal') }}" class="nav__brand">
+      <img src="{{ url_for('static', filename='images/imc-logo.jpg') }}" alt="Ivy Muslim Conference" class="nav__logo" />
+      <span class="nav__brand-text">Ivy Muslim Conference @ Yale</span>
+    </a>
+    <div class="nav__spacer"></div>
+    <a class="nav__link" href="{{ url_for('portal') }}">Portal</a>
+    <a class="nav__link" href="{{ url_for('explore_page') }}">Explore</a>
+  </nav>
+
+  <main class="container">
+    <div class="card" style="margin-bottom:16px;">
+      <p class="hero-kicker" style="margin:0 0 4px;">Ivy Muslim Conference · Yale</p>
+      <h1 class="section-heading" style="font-size:24px; margin:0 0 6px;">Conference Itinerary</h1>
+      <p class="hint" style="margin:0;">Full schedule of events for IMC weekend.</p>
+    </div>
+
+    <div id="itinerary-container">
+      <div class="empty-state">Loading schedule…</div>
+    </div>
+  </main>
+
+  <footer class="footer footer--light">
+    <div class="footer__inner">
+      <div class="footer__left">
+        <strong>IMC Housing</strong>
+        <span class="footer__muted">· Itinerary</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    async function loadItinerary() {
+      const container = document.getElementById('itinerary-container');
+      try {
+        const res = await fetch('/api/itinerary');
+        const data = await res.json();
+        const items = data.itinerary || [];
+        if (!items.length) {
+          container.innerHTML = '<div class="empty-state">No events scheduled yet. Check back soon!</div>';
+          return;
+        }
+        const byDay = {};
+        items.forEach(item => {
+          const day = item.start_time ? item.start_time.split(' ')[0] : 'TBD';
+          if (!byDay[day]) byDay[day] = [];
+          byDay[day].push(item);
+        });
+        let html = '<div class="itin-timeline">';
+        for (const [day, events] of Object.entries(byDay)) {
+          const label = day === 'TBD' ? 'TBD' : new Date(day + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+          html += `<div class="itin-day"><p class="itin-day-heading">${label}</p>`;
+          events.forEach(e => {
+            const start = e.start_time ? e.start_time.split(' ')[1] || '' : '';
+            const end = e.end_time ? e.end_time.split(' ')[1] || '' : '';
+            const timeStr = start ? (end ? `${fmt(start)}–${fmt(end)}` : fmt(start)) : '—';
+            html += `
+              <div class="itin-item">
+                <div class="itin-time">${timeStr}</div>
+                <div class="itin-body">
+                  <div class="itin-title">${esc(e.title)}<span class="cat-badge cat-badge--${e.category}">${esc(e.category)}</span></div>
+                  ${e.description ? `<p class="itin-desc">${esc(e.description)}</p>` : ''}
+                  ${e.location ? `<div class="itin-location">📍 ${esc(e.location)}</div>` : ''}
+                </div>
+              </div>`;
+          });
+          html += '</div>';
+        }
+        html += '</div>';
+        container.innerHTML = html;
+      } catch {
+        container.innerHTML = '<div class="empty-state">Could not load itinerary.</div>';
+      }
+    }
+    function fmt(t) {
+      const [h, m] = t.split(':');
+      const hr = parseInt(h);
+      return `${hr % 12 || 12}:${m} ${hr < 12 ? 'AM' : 'PM'}`;
+    }
+    function esc(s) {
+      return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+    loadItinerary();
+  </script>
+</body>
+</html>

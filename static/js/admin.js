@@ -224,3 +224,173 @@
 
   refreshFeedbackUI();
 })();
+
+// ── Tags ──────────────────────────────────────────────────────────────────────
+(function () {
+  const input = document.getElementById('newTagInput');
+  const btn = document.getElementById('btnAddTag');
+  const list = document.getElementById('tagsList');
+  const status = document.getElementById('tagsStatus');
+
+  function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  async function loadTags() {
+    if (!list) return;
+    const data = await fetch('/api/tags').then(r => r.json()).catch(() => ({ tags: [] }));
+    const tags = data.tags || [];
+    list.innerHTML = tags.length
+      ? tags.map(t => `
+          <span style="display:inline-flex;align-items:center;gap:4px;background:#ede9fe;border:1px solid #c4b5fd;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700;color:#5b21b6;">
+            ${esc(t.name)}
+            <button data-tag-id="${t.tag_id}" style="border:none;background:none;cursor:pointer;color:#7c3aed;font-size:14px;line-height:1;padding:0 2px;" title="Delete">×</button>
+          </span>`).join('')
+      : '<span style="font-size:12px;color:var(--muted);">No tags yet.</span>';
+    list.querySelectorAll('[data-tag-id]').forEach(del => {
+      del.addEventListener('click', () => deleteTag(Number(del.dataset.tagId)));
+    });
+  }
+
+  async function deleteTag(id) {
+    await fetch(`/api/admin/tags/${id}`, { method: 'DELETE' });
+    loadTags();
+  }
+
+  btn?.addEventListener('click', async () => {
+    const name = (input?.value || '').trim();
+    if (!name) return;
+    const data = await fetch('/api/admin/tags', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    }).then(r => r.json()).catch(() => ({}));
+    if (data.error) { if (status) status.textContent = data.error; return; }
+    if (input) input.value = '';
+    if (status) { status.textContent = 'Tag added!'; setTimeout(() => { status.textContent = ''; }, 2000); }
+    loadTags();
+  });
+
+  loadTags();
+})();
+
+// ── Recommendations ───────────────────────────────────────────────────────────
+(function () {
+  function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function val(id) { return (document.getElementById(id)?.value || '').trim(); }
+
+  async function loadRecs() {
+    const list = document.getElementById('recList');
+    if (!list) return;
+    const data = await fetch('/api/recommendations').then(r => r.json()).catch(() => ({ recommendations: [] }));
+    const recs = data.recommendations || [];
+    list.innerHTML = recs.length
+      ? recs.map(r => `
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;">
+            <div>
+              <div style="font-size:13px;font-weight:700;">${esc(r.name)} <span style="font-size:11px;color:#8b5cf6;font-weight:700;">[${esc(r.category)}]</span></div>
+              ${r.address ? `<div style="font-size:12px;color:var(--muted);">${esc(r.address)}</div>` : ''}
+              ${r.description ? `<div style="font-size:12px;margin-top:2px;">${esc(r.description)}</div>` : ''}
+            </div>
+            <button data-rec-id="${r.r_id}" class="btn-danger" style="flex-shrink:0;margin-left:12px;font-size:12px;padding:5px 10px;">Delete</button>
+          </div>`).join('')
+      : '<p style="font-size:13px;color:var(--muted);">No recommendations yet.</p>';
+    list.querySelectorAll('[data-rec-id]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        await fetch(`/api/admin/recommendations/${btn.dataset.recId}`, { method: 'DELETE' });
+        loadRecs();
+      });
+    });
+  }
+
+  document.getElementById('btnAddRec')?.addEventListener('click', async () => {
+    const status = document.getElementById('recStatus');
+    const name = val('recName');
+    if (!name) { if (status) status.textContent = 'Name is required.'; return; }
+    await fetch('/api/admin/recommendations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name, category: val('recCategory'), address: val('recAddress'),
+        description: val('recDesc'), url: val('recUrl'),
+      }),
+    });
+    ['recName','recAddress','recDesc','recUrl'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    if (status) { status.textContent = 'Added!'; setTimeout(() => { status.textContent = ''; }, 2000); }
+    loadRecs();
+  });
+
+  loadRecs();
+})();
+
+// ── Itinerary ─────────────────────────────────────────────────────────────────
+(function () {
+  function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function val(id) { return (document.getElementById(id)?.value || '').trim(); }
+
+  async function loadItin() {
+    const list = document.getElementById('itinList');
+    if (!list) return;
+    const data = await fetch('/api/itinerary').then(r => r.json()).catch(() => ({ itinerary: [] }));
+    const items = data.itinerary || [];
+    list.innerHTML = items.length
+      ? items.map(i => `
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;">
+            <div>
+              <div style="font-size:13px;font-weight:700;">${esc(i.title)} <span style="font-size:11px;color:#8b5cf6;">[${esc(i.category)}]</span></div>
+              <div style="font-size:12px;color:var(--muted);">${esc(i.start_time)} ${i.end_time ? '→ ' + esc(i.end_time) : ''} ${i.location ? '· ' + esc(i.location) : ''}</div>
+              ${i.description ? `<div style="font-size:12px;">${esc(i.description)}</div>` : ''}
+            </div>
+            <button data-itin-id="${i.i_id}" class="btn-danger" style="flex-shrink:0;margin-left:12px;font-size:12px;padding:5px 10px;">Delete</button>
+          </div>`).join('')
+      : '<p style="font-size:13px;color:var(--muted);">No events yet.</p>';
+    list.querySelectorAll('[data-itin-id]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        await fetch(`/api/admin/itinerary/${btn.dataset.itinId}`, { method: 'DELETE' });
+        loadItin();
+      });
+    });
+  }
+
+  document.getElementById('btnAddItin')?.addEventListener('click', async () => {
+    const status = document.getElementById('itinStatus');
+    const title = val('itinTitle');
+    if (!title) { if (status) status.textContent = 'Title is required.'; return; }
+    await fetch('/api/admin/itinerary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title, category: val('itinCategory'), description: val('itinDesc'),
+        location: val('itinLocation'), start_time: val('itinStart'), end_time: val('itinEnd'),
+      }),
+    });
+    ['itinTitle','itinDesc','itinLocation','itinStart','itinEnd'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    if (status) { status.textContent = 'Added!'; setTimeout(() => { status.textContent = ''; }, 2000); }
+    loadItin();
+  });
+
+  loadItin();
+})();
+
+// ── Host Location ─────────────────────────────────────────────────────────────
+(function () {
+  document.getElementById('btnSetLocation')?.addEventListener('click', async () => {
+    const status = document.getElementById('locStatus');
+    const h_id = document.getElementById('locHostId')?.value;
+    const address = document.getElementById('locAddress')?.value.trim();
+    const lat = document.getElementById('locLat')?.value;
+    const lng = document.getElementById('locLng')?.value;
+    if (!h_id || !lat || !lng) {
+      if (status) status.textContent = 'Host ID, latitude, and longitude are required.';
+      return;
+    }
+    try {
+      await fetch('/api/admin/host-location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ h_id: Number(h_id), address, lat: Number(lat), lng: Number(lng) }),
+      });
+      if (status) { status.textContent = 'Location saved!'; setTimeout(() => { status.textContent = ''; }, 2000); }
+    } catch {
+      if (status) status.textContent = 'Failed to save location.';
+    }
+  });
+})();

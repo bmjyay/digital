@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Explore — IMC Housing</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/portal.css') }}">
+  <style>
+    .explore-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 20px; }
+    .explore-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .rec-card {
+      background: #fff; border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px; display: flex; flex-direction: column; gap: 6px;
+      box-shadow: 0 4px 12px rgba(15,23,42,0.06);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .rec-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(15,23,42,0.1); }
+    .rec-category {
+      font-size: 11px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.07em; color: #8b5cf6;
+    }
+    .rec-name { font-size: 16px; font-weight: 800; margin: 0; }
+    .rec-address { font-size: 12px; color: var(--muted); }
+    .rec-desc { font-size: 13px; color: #374151; line-height: 1.5; flex: 1; }
+    .rec-link {
+      display: inline-block; margin-top: 4px; font-size: 12px; font-weight: 700;
+      color: #8b5cf6; text-decoration: none;
+    }
+    .rec-link:hover { text-decoration: underline; }
+    .empty-state { text-align: center; padding: 48px 16px; color: var(--muted); font-size: 14px; }
+    .cat-icon { margin-right: 4px; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="{{ url_for('portal') }}" class="nav__brand">
+      <img src="{{ url_for('static', filename='images/imc-logo.jpg') }}" alt="Ivy Muslim Conference" class="nav__logo" />
+      <span class="nav__brand-text">Ivy Muslim Conference @ Yale</span>
+    </a>
+    <div class="nav__spacer"></div>
+    <a class="nav__link" href="{{ url_for('portal') }}">Portal</a>
+    <a class="nav__link" href="{{ url_for('itinerary_page') }}">Itinerary</a>
+  </nav>
+
+  <main class="container">
+    <div class="card" style="margin-bottom:16px;">
+      <p class="hero-kicker" style="margin:0 0 4px;">Ivy Muslim Conference · Yale</p>
+      <h1 class="section-heading" style="font-size:24px; margin:0 0 6px;">Explore New Haven</h1>
+      <p class="hint" style="margin:0;">Cafes, restaurants, and activities recommended by your IMC community.</p>
+    </div>
+
+    <div class="explore-filters" id="explore-filters">
+      <button class="sp-filter sp-filter--active" data-cat="all">All</button>
+    </div>
+
+    <div id="explore-grid" class="explore-grid">
+      <div class="empty-state">Loading recommendations…</div>
+    </div>
+  </main>
+
+  <footer class="footer footer--light">
+    <div class="footer__inner">
+      <div class="footer__left">
+        <strong>IMC Housing</strong>
+        <span class="footer__muted">· Explore</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const ICONS = { cafe: '☕', restaurant: '🍽️', activity: '🎯', shopping: '🛍️', prayer: '🕌', general: '📍' };
+    let allRecs = [];
+    let activeFilter = 'all';
+
+    async function loadRecs() {
+      try {
+        const res = await fetch('/api/recommendations');
+        const data = await res.json();
+        allRecs = data.recommendations || [];
+        buildFilters();
+        render();
+      } catch {
+        document.getElementById('explore-grid').innerHTML = '<div class="empty-state">Could not load recommendations.</div>';
+      }
+    }
+
+    function buildFilters() {
+      const cats = ['all', ...new Set(allRecs.map(r => r.category))];
+      const bar = document.getElementById('explore-filters');
+      bar.innerHTML = cats.map(c =>
+        `<button class="sp-filter ${c === 'all' ? 'sp-filter--active' : ''}" data-cat="${c}">${ICONS[c] || '📍'} ${cap(c)}</button>`
+      ).join('');
+      bar.querySelectorAll('.sp-filter').forEach(btn => {
+        btn.addEventListener('click', () => {
+          activeFilter = btn.dataset.cat;
+          bar.querySelectorAll('.sp-filter').forEach(b => b.classList.remove('sp-filter--active'));
+          btn.classList.add('sp-filter--active');
+          render();
+        });
+      });
+    }
+
+    function render() {
+      const grid = document.getElementById('explore-grid');
+      const filtered = activeFilter === 'all' ? allRecs : allRecs.filter(r => r.category === activeFilter);
+      if (!filtered.length) {
+        grid.innerHTML = '<div class="empty-state">No recommendations yet in this category.</div>';
+        return;
+      }
+      grid.innerHTML = filtered.map(r => `
+        <div class="rec-card">
+          <div class="rec-category">${ICONS[r.category] || '📍'} ${esc(r.category)}</div>
+          <div class="rec-name">${esc(r.name)}</div>
+          ${r.address ? `<div class="rec-address">📍 ${esc(r.address)}</div>` : ''}
+          ${r.description ? `<div class="rec-desc">${esc(r.description)}</div>` : ''}
+          ${r.url ? `<a class="rec-link" href="${esc(r.url)}" target="_blank" rel="noopener">Visit →</a>` : ''}
+        </div>`).join('');
+    }
+
+    function cap(s) { return s ? s[0].toUpperCase() + s.slice(1) : ''; }
+    function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    loadRecs();
+  </script>
+</body>
+</html>
