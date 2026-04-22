@@ -29,6 +29,7 @@
   let hostsDirectory = [];
   let friendsSet = new Set();
   let incomingSet = new Set();
+  let outgoingSet = new Set();
 
   function initialsFromNameOrEmail(name, email) {
     if (name && name.trim()) {
