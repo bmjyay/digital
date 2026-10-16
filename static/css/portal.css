@@ -440,12 +440,14 @@ button, input, textarea, select { font-family: inherit; }
 
 .cover__title {
   margin: 0 0 12px;
-  font-family: var(--font-display);
+  font-family: "EB Garamond", var(--font-display);
   font-size: clamp(2.5rem, 9vw, 5.6rem);
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.015em;
   line-height: 1.02;
-  color: var(--navy-900);
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--navy-800);
+  paint-order: stroke fill;
 }
 
 .typewriter { display: inline-block; white-space: nowrap; }
@@ -518,7 +520,6 @@ button, input, textarea, select { font-family: inherit; }
   width: min(52ch, 100%);
   font-family: var(--font-display);
   font-size: clamp(1.25rem, 2.4vw, 1.5rem);
-  font-style: italic;
   font-weight: 500;
   color: var(--muted);
   line-height: 1.45;
