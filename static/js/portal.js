@@ -618,6 +618,23 @@
   const dots = document.querySelectorAll("[data-section-dot]");
   const revealEls = document.querySelectorAll(".reveal");
 
+  const progressBar = document.getElementById("scroll-progress-bar");
+  if (progressBar) {
+    let ticking = false;
+    const updateProgress = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      progressBar.style.transform = `scaleX(${max > 0 ? Math.min(window.scrollY / max, 1) : 0})`;
+      ticking = false;
+    };
+    window.addEventListener("scroll", () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(updateProgress);
+      }
+    }, { passive: true });
+    updateProgress();
+  }
+
   if (!("IntersectionObserver" in window)) return;
 
   const sectionObserver = new IntersectionObserver(

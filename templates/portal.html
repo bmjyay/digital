@@ -13,13 +13,10 @@
 <body>
   <nav class="nav">
     <a href="{{ url_for('portal') }}" class="nav__brand">
-      <img
-        id="nav-logo"
-        src="{{ url_for('static', filename='images/imc-logo.jpg') }}"
-        alt="Ivy Muslim Conference"
-        class="nav__logo"
-        onerror="this.hidden = true"
-      />
+      <svg id="nav-logo" class="nav__logo" viewBox="0 0 120 120" role="img" aria-label="Ivy Muslim Conference">
+        <circle cx="60" cy="60" r="58" class="nav__logo-bg" />
+        <path d="M30 24 H52 V27 H47 L60.5 48 L76 27 H71 V24 H90 V27 H84 L65 57 V80 H72 V84 H48 V80 H55 V57 L35 27 H30 Z" transform="translate(0 6)" class="nav__logo-y" />
+      </svg>
       <span class="nav__brand-text">Ivy Muslim Conference @ Yale</span>
     </a>
 
@@ -35,6 +32,8 @@
     </button>
 
     <a class="nav__link" href="{{ url_for('admin_login') }}">Admin Panel</a>
+
+    <div class="scroll-progress" aria-hidden="true"><span id="scroll-progress-bar"></span></div>
   </nav>
   <div id="nav-login-panel" class="nav-login-panel" hidden>
     <form id="nav-login-form" class="nav-login-form">
@@ -97,13 +96,12 @@
           </h1>
 
           <div class="cover__logo-row" aria-hidden="true">
-            <img
-              id="cover-logo"
-              src="{{ url_for('static', filename='images/imc-logo.jpg') }}"
-              alt=""
-              class="cover-logo"
-              onerror="this.style.visibility = 'hidden'"
-            />
+            <svg id="cover-logo" class="cover-logo" viewBox="0 0 120 120">
+              <circle class="cover-logo__ring" cx="60" cy="60" r="56" pathLength="1" />
+              <circle class="cover-logo__ring cover-logo__ring--inner" cx="60" cy="60" r="50" pathLength="1" />
+              <path class="cover-logo__y" d="M30 24 H52 V27 H47 L60.5 48 L76 27 H71 V24 H90 V27 H84 L65 57 V80 H72 V84 H48 V80 H55 V57 L35 27 H30 Z" pathLength="1" />
+              <text class="cover-logo__text" x="60" y="100" text-anchor="middle">IMC</text>
+            </svg>
           </div>
 
           <p class="cover__subtitle">Housing assignments without the spreadsheet chaos.</p>
@@ -120,10 +118,11 @@
             </button>
           </div>
 
-          <div class="cover__scroll" aria-hidden="true">
-            <span class="cover__scroll-dot"></span>
-            <span class="cover__scroll-text">Scroll</span>
-          </div>
+          <button class="cover__scroll" type="button"
+            onclick="document.getElementById('portal-hero').scrollIntoView({behavior:'smooth', block:'start'})">
+            <span class="cover__scroll-text">Discover</span>
+            <span class="cover__scroll-line" aria-hidden="true"></span>
+          </button>
         </div>
       </header>
     </section>
