@@ -66,10 +66,9 @@
     }
   }
 
-  const heroLoginCta = $("hero-login-cta");
-  if (heroLoginCta && navLoginButton) {
-    heroLoginCta.addEventListener("click", () => navLoginButton.click());
-  }
+  $$("[data-open-login]").forEach((btn) => {
+    btn.addEventListener("click", () => showLoginPanel());
+  });
 
   function showLoginPanel() {
     if (!navLoginPanel) return;
@@ -175,7 +174,8 @@
       target instanceof HTMLElement &&
       !navLoginPanel.contains(target) &&
       target !== navLoginButton &&
-      target !== navUserChip
+      target !== navUserChip &&
+      !target.closest("[data-open-login], #nav-login-button, #nav-user-chip")
     ) {
       hideLoginPanel();
     }
@@ -611,6 +611,40 @@
   }
 
   type();
+})();
+
+(function () {
+  const sections = document.querySelectorAll(".snap-section[id]");
+  const dots = document.querySelectorAll("[data-section-dot]");
+  const revealEls = document.querySelectorAll(".reveal");
+
+  if (!("IntersectionObserver" in window)) return;
+
+  const sectionObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        dots.forEach((dot) => {
+          dot.classList.toggle("is-active", dot.dataset.sectionDot === entry.target.id);
+        });
+      });
+    },
+    { threshold: 0.5 }
+  );
+  sections.forEach((section) => sectionObserver.observe(section));
+
+  document.documentElement.classList.add("js-reveal");
+  const revealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-revealed");
+        revealObserver.unobserve(entry.target);
+      });
+    },
+    { threshold: 0.15 }
+  );
+  revealEls.forEach((el) => revealObserver.observe(el));
 })();
 
 
