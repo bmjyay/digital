@@ -13,9 +13,13 @@ RDS_PORT = int(os.getenv("RDS_PORT", "3306"))
 DB_USER = os.getenv("DB_USER")
 DB_PASS = os.getenv("DB_PASS")
 DB_NAME = os.getenv("DB_NAME")
+DEMO_MODE = os.getenv("DEMO_MODE") == "1"
 
 
 def db_connect():
+    if DEMO_MODE:
+        from demo_db import demo_connect
+        return demo_connect()
     try:
         conn = mysql.connector.connect(
             host=RDS_HOST,
