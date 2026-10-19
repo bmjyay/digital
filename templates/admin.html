@@ -4,23 +4,25 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin Panel — IMC Housing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/portal.css') }}">
 </head>
 
 <body>
   <nav class="nav">
     <a href="{{ url_for('portal') }}" class="nav__brand">
-      <img
-        src="{{ url_for('static', filename='images/imc-logo.jpg') }}"
-        alt="Ivy Muslim Conference"
-        class="nav__logo"
-      />
+      <svg class="nav__logo" viewBox="0 0 120 120" role="img" aria-label="Ivy Muslim Conference">
+        <circle cx="60" cy="60" r="58" class="nav__logo-bg" />
+        <path d="M30 24 H52 V27 H47 L60.5 48 L76 27 H71 V24 H90 V27 H84 L65 57 V80 H72 V84 H48 V80 H55 V57 L35 27 H30 Z" transform="translate(0 6)" class="nav__logo-y" />
+      </svg>
       <span class="nav__brand-text">Ivy Muslim Conference @ Yale</span>
     </a>
 
-    <div class="nav__spacer"></div>
+    {% include "_nav_links.html" %}
 
-    <a class="nav__link" href="{{ url_for('portal') }}">Portal</a>
+    <div class="nav__spacer"></div>
 
     <form action="{{ url_for('admin_logout') }}" method="post" style="margin:0;">
       <button class="nav__link nav__link--light" type="submit">Logout</button>
@@ -76,6 +78,93 @@
       </div>
 
       <p id="matchStatus" class="status" style="margin-top:12px;"></p>
+    </section>
+
+    <section class="card" style="margin-top:16px;">
+      <h2 class="section-heading" style="margin-top:0;">Explore Recommendations</h2>
+      <p class="hint" style="margin-top:6px;">
+        Add cafes, restaurants and activities shown on the <a href="{{ url_for('explore') }}">Explore</a> page.
+      </p>
+
+      <form id="recForm" class="admin-form">
+        <div class="grid-2">
+          <div>
+            <label class="label" for="recName">Name</label>
+            <input id="recName" class="input" type="text" placeholder="Atticus Bookstore Cafe" required />
+          </div>
+          <div>
+            <label class="label" for="recCategory">Category</label>
+            <select id="recCategory" class="input">
+              <option value="cafe">Cafe</option>
+              <option value="restaurant">Restaurant</option>
+              <option value="activity">Activity</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="label" for="recAddress">Address</label>
+            <input id="recAddress" class="input" type="text" placeholder="1082 Chapel St, New Haven, CT" />
+          </div>
+          <div>
+            <label class="label" for="recUrl">URL (optional)</label>
+            <input id="recUrl" class="input" type="url" placeholder="https://…" />
+          </div>
+        </div>
+        <label class="label" for="recDescription">Description</label>
+        <textarea id="recDescription" class="input" rows="3" placeholder="Great pour-over coffee and a cozy reading nook…"></textarea>
+        <div>
+          <button type="submit" class="btn-primary">Add recommendation</button>
+        </div>
+      </form>
+
+      <p id="recStatus" class="status" style="margin-top:12px;"></p>
+      <ul id="recList" class="admin-list"></ul>
+    </section>
+
+    <section class="card" style="margin-top:16px;">
+      <h2 class="section-heading" style="margin-top:0;">Itinerary</h2>
+      <p class="hint" style="margin-top:6px;">
+        Add conference schedule events shown on the <a href="{{ url_for('itinerary') }}">Itinerary</a> page.
+      </p>
+
+      <form id="eventForm" class="admin-form">
+        <div class="grid-2">
+          <div>
+            <label class="label" for="eventTitle">Title</label>
+            <input id="eventTitle" class="input" type="text" placeholder="Keynote address" required />
+          </div>
+          <div>
+            <label class="label" for="eventCategory">Category</label>
+            <select id="eventCategory" class="input">
+              <option value="general">General</option>
+              <option value="session">Session</option>
+              <option value="meal">Meal</option>
+              <option value="prayer">Prayer</option>
+              <option value="social">Social</option>
+            </select>
+          </div>
+          <div>
+            <label class="label" for="eventStart">Start time</label>
+            <input id="eventStart" class="input" type="datetime-local" required />
+          </div>
+          <div>
+            <label class="label" for="eventEnd">End time</label>
+            <input id="eventEnd" class="input" type="datetime-local" />
+          </div>
+          <div>
+            <label class="label" for="eventLocation">Location</label>
+            <input id="eventLocation" class="input" type="text" placeholder="Woolsey Hall, Yale" />
+          </div>
+        </div>
+        <label class="label" for="eventDescription">Description</label>
+        <textarea id="eventDescription" class="input" rows="3" placeholder="Optional details…"></textarea>
+        <div>
+          <button type="submit" class="btn-primary">Add event</button>
+        </div>
+      </form>
+
+      <p id="eventStatus" class="status" style="margin-top:12px;"></p>
+      <ul id="eventList" class="admin-list"></ul>
     </section>
 
     <section class="card" style="margin-top:16px;">

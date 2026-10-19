@@ -4,20 +4,23 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>IMC Housing Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=EB+Garamond:wght@500&family=Inter:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/portal.css') }}">
 </head>
 
 <body>
   <nav class="nav">
     <a href="{{ url_for('portal') }}" class="nav__brand">
-      <img
-        id="nav-logo"
-        src="{{ url_for('static', filename='images/imc-logo.jpg') }}"
-        alt="Ivy Muslim Conference"
-        class="nav__logo"
-      />
+      <svg id="nav-logo" class="nav__logo" viewBox="0 0 120 120" role="img" aria-label="Ivy Muslim Conference">
+        <circle cx="60" cy="60" r="58" class="nav__logo-bg" />
+        <path d="M30 24 H52 V27 H47 L60.5 48 L76 27 H71 V24 H90 V27 H84 L65 57 V80 H72 V84 H48 V80 H55 V57 L35 27 H30 Z" transform="translate(0 6)" class="nav__logo-y" />
+      </svg>
       <span class="nav__brand-text">Ivy Muslim Conference @ Yale</span>
     </a>
+
+    {% include "_nav_links.html" %}
 
     <div class="nav__spacer"></div>
 
@@ -31,15 +34,9 @@
     </button>
 
     <a class="nav__link" href="{{ url_for('admin_login') }}">Admin Panel</a>
-  </nav>
-  <body>
-    <div>
-     <div class="wave"></div>
-     <div class="wave"></div>
-     <div class="wave"></div>
-    </div>
-  </body>
 
+    <div class="scroll-progress" aria-hidden="true"><span id="scroll-progress-bar"></span></div>
+  </nav>
   <div id="nav-login-panel" class="nav-login-panel" hidden>
     <form id="nav-login-form" class="nav-login-form">
       <label for="nav-login-email" class="nav-login-label">Yale email</label>
@@ -78,6 +75,13 @@
     <div class="wave"></div>
   </div>
 
+  <ul class="section-dots" aria-label="Page sections">
+    <li><a href="#top" data-section-dot="top"><span>Welcome</span></a></li>
+    <li><a href="#portal-hero" data-section-dot="portal-hero"><span>About</span></a></li>
+    <li><a href="#how-it-works" data-section-dot="how-it-works"><span>How it works</span></a></li>
+    <li><a href="#results" data-section-dot="results"><span>Your assignment</span></a></li>
+  </ul>
+
   <main class="snap-main">
 
     <section id="top" class="snap-section snap-section--cover">
@@ -94,12 +98,11 @@
           </h1>
 
           <div class="cover__logo-row" aria-hidden="true">
-            <img
-              id="cover-logo"
-              src="{{ url_for('static', filename='images/imc-logo.jpg') }}"
-              alt=""
-              class="cover-logo"
-            />
+            <svg id="cover-logo" class="cover-logo" viewBox="0 0 120 120">
+              <circle class="cover-logo__ring" cx="60" cy="60" r="56" pathLength="1" />
+              <circle class="cover-logo__ring cover-logo__ring--inner" cx="60" cy="60" r="50" pathLength="1" />
+              <path class="cover-logo__y" transform="translate(0 6)" d="M30 24 H52 V27 H47 L60.5 48 L76 27 H71 V24 H90 V27 H84 L65 57 V80 H72 V84 H48 V80 H55 V57 L35 27 H30 Z" pathLength="1" />
+            </svg>
           </div>
 
           <p class="cover__subtitle">Housing assignments without the spreadsheet chaos.</p>
@@ -116,22 +119,36 @@
             </button>
           </div>
 
-          <div class="cover__scroll" aria-hidden="true">
-            <span class="cover__scroll-dot"></span>
-            <span class="cover__scroll-text">Scroll</span>
-          </div>
+          <button class="cover__scroll" type="button"
+            onclick="document.getElementById('portal-hero').scrollIntoView({behavior:'smooth', block:'start'})">
+            <span class="cover__scroll-text">Discover</span>
+            <span class="cover__scroll-line" aria-hidden="true"></span>
+          </button>
         </div>
       </header>
     </section>
 
     <section id="portal-hero" class="snap-section">
       <div class="main">
-        <section class="card card--hero card--hero-xl hero-centered">
+        <section class="card card--hero card--hero-xl reveal">
           <div class="hero-grid">
             <div class="hero-left">
               <p class="hero-kicker">Ivy Muslim Conference · Housing Portal</p>
               <h2 class="hero-title">Conference housing without the chaos.</h2>
+              <hr class="hero-rule" />
 
+              <div class="hero-cta-row">
+                <button id="hero-login-cta" type="button" class="btn-primary" data-open-login>
+                  Log in to the portal
+                </button>
+                <button type="button" class="btn-ghost"
+                  onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth', block:'start'})">
+                  Learn how it works
+                </button>
+              </div>
+            </div>
+
+            <div class="hero-right">
               <p class="hero-body">
                 Every year since 2009, the Chaplain’s Office, in collaboration with the Yale Muslim Students Association,
                 hosts the Ivy Muslim Conference (IMC), an overnight gathering for Muslim students from the Ivy League and beyond.
@@ -144,31 +161,21 @@
                 The IMC Conference Housing Portal automates this process so organizers can spend less time in spreadsheets and more time
                 building a meaningful experience for attendees.
               </p>
+            </div>
+          </div>
 
-              <div class="hero-cta-row">
-                <button id="hero-login-cta" type="button" class="btn-primary">
-                  Log in to the portal
-                </button>
-                <button type="button" class="btn-ghost"
-                  onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth', block:'start'})">
-                  Learn how it works
-                </button>
-              </div>
-
-              <div class="hero-stats-row">
-                <div class="hero-stat-pill">
-                  <span class="hero-stat-label">Since</span>
-                  <span class="hero-stat-value">2009</span>
-                </div>
-                <div class="hero-stat-pill">
-                  <span class="hero-stat-label">Last year</span>
-                  <span class="hero-stat-value">300+ attendees</span>
-                </div>
-                <div class="hero-stat-pill">
-                  <span class="hero-stat-label">Schools</span>
-                  <span class="hero-stat-value">20+ campuses</span>
-                </div>
-              </div>
+          <div class="hero-stats-row">
+            <div class="hero-stat-pill">
+              <span class="hero-stat-label">Since</span>
+              <span class="hero-stat-value">2009</span>
+            </div>
+            <div class="hero-stat-pill">
+              <span class="hero-stat-label">Last year</span>
+              <span class="hero-stat-value">300+ attendees</span>
+            </div>
+            <div class="hero-stat-pill">
+              <span class="hero-stat-label">Schools</span>
+              <span class="hero-stat-value">20+ campuses</span>
             </div>
           </div>
         </section>
@@ -177,8 +184,10 @@
 
     <section id="how-it-works" class="snap-section">
       <div class="main">
-        <section class="card card-section how-centered">
+        <section class="card card-section how-centered reveal">
+          <p class="section-eyebrow">The process</p>
           <h2 class="section-heading">How it works</h2>
+          <p class="hint">From spreadsheets to assignments in three steps.</p>
           <div class="steps-grid">
             <div class="step-item">
               <div class="step-badge">1</div>
@@ -239,11 +248,13 @@
           </div>
         </section>
 
-        <section id="result-empty" class="card card-section result-empty">
+        <section id="result-empty" class="card card-section result-empty reveal">
+          <p class="section-eyebrow">Your stay</p>
           <h2 class="section-heading">Your housing assignment</h2>
           <p class="hint">
             Log in to view your host and hostee information.
           </p>
+          <button type="button" class="btn-primary" data-open-login>Log in</button>
         </section>
       </div>
     </section>
