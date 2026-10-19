@@ -36,9 +36,45 @@ def db_connect():
         sys.exit(1)
 
 
+def _iso(value):
+    """DATETIME columns come back as datetime from MySQL and as text from the demo DB."""
+    if value is None:
+        return None
+    try:
+        return value.isoformat(sep=" ", timespec="minutes")
+    except AttributeError:
+        return str(value)[:16]
+
+
 class IMCDB:
     def __init__(self):
         self.conn, self.cursor = db_connect()
+        if not DEMO_MODE:
+            self.ensure_extra_tables()
+
+    def ensure_extra_tables(self):
+        """Create the Explore and Itinerary tables if this database predates them."""
+        self.cursor.execute(
+            """CREATE TABLE IF NOT EXISTS recommendations (
+                   r_id INT AUTO_INCREMENT PRIMARY KEY,
+                   name VARCHAR(255) NOT NULL,
+                   category VARCHAR(50) NOT NULL,
+                   address VARCHAR(255),
+                   url VARCHAR(500),
+                   description TEXT
+               )"""
+        )
+        self.cursor.execute(
+            """CREATE TABLE IF NOT EXISTS events (
+                   e_id INT AUTO_INCREMENT PRIMARY KEY,
+                   title VARCHAR(255) NOT NULL,
+                   category VARCHAR(50) NOT NULL,
+                   start_time DATETIME NOT NULL,
+                   end_time DATETIME,
+                   location VARCHAR(255),
+                   description TEXT
+               )"""
+        )
     def upload(self, hosts_file, hostees_file):
         self.cursor.execute("SET FOREIGN_KEY_CHECKS = 0")
 
@@ -485,6 +521,50 @@ class IMCDB:
         )
         rows = self.cursor.fetchall()
         return [{"u_id": r[0], "name": r[1], "email": r[2]} for r in rows]
+
+    def fetch_recommendations(self):
+        self.cursor.execute(
+            "SELECT r_id, name, category, address, url, description FROM recommendations ORDER BY category, name"
+        )
+        return [
+            {"r_id": r[0], "name": r[1], "category": r[2], "address": r[3], "url": r[4], "description": r[5]}
+            for r in self.cursor.fetchall()
+        ]
+
+    def add_recommendation(self, name, category, address, url, description):
+        self.cursor.execute(
+            "INSERT INTO recommendations (name, category, address, url, description) VALUES (%s, %s, %s, %s, %s)",
+            (name, category, address, url, description),
+        )
+
+    def delete_recommendation(self, r_id):
+        self.cursor.execute("DELETE FROM recommendations WHERE r_id = %s", (r_id,))
+
+    def fetch_events(self):
+        self.cursor.execute(
+            "SELECT e_id, title, category, start_time, end_time, location, description FROM events ORDER BY start_time"
+        )
+        return [
+            {
+                "e_id": e[0],
+                "title": e[1],
+                "category": e[2],
+                "start_time": _iso(e[3]),
+                "end_time": _iso(e[4]),
+                "location": e[5],
+                "description": e[6],
+            }
+            for e in self.cursor.fetchall()
+        ]
+
+    def add_event(self, title, category, start_time, end_time, location, description):
+        self.cursor.execute(
+            "INSERT INTO events (title, category, start_time, end_time, location, description) VALUES (%s, %s, %s, %s, %s, %s)",
+            (title, category, start_time, end_time, location, description),
+        )
+
+    def delete_event(self, e_id):
+        self.cursor.execute("DELETE FROM events WHERE e_id = %s", (e_id,))
 
     def clear_matches(self):
         """Clears hostee assignments and friendships."""

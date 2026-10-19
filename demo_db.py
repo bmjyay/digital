@@ -5,7 +5,7 @@ Every demo host signs in with code 1234 (see IMCDB.import_users).
 """
 import re
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 
 SCHEMA = """
 CREATE TABLE hosts (
@@ -27,6 +27,15 @@ CREATE TABLE friendships (
 CREATE TABLE feedback (
     f_id INTEGER PRIMARY KEY AUTOINCREMENT,
     u_id INTEGER, published_at TEXT, content TEXT, category TEXT
+);
+CREATE TABLE recommendations (
+    r_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL, category TEXT NOT NULL, address TEXT, url TEXT, description TEXT
+);
+CREATE TABLE events (
+    e_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL, category TEXT NOT NULL, start_time TEXT NOT NULL, end_time TEXT,
+    location TEXT, description TEXT
 );
 """
 
@@ -57,6 +66,47 @@ FRIENDSHIPS = [
     ("Sarah Mahmoud", "Maryam Siddiqui", "friends"),
     ("Sarah Mahmoud", "Omar Ali", "requested"),
 ]
+
+
+# name, category, address, url, description
+RECOMMENDATIONS = [
+    ("Arwa Cafe", "cafe", "", "", "Cozy spot for coffee and pastries between sessions."),
+    ("Atticus Bookstore Cafe", "cafe", "1082 Chapel St, New Haven, CT", "",
+     "Great coffee and soup surrounded by bookshelves."),
+    ("Starbucks Coffee", "cafe", "", "", "Reliable caffeine close to campus."),
+    ("Mamoun's Falafel", "restaurant", "85 Howe St, New Haven, CT", "",
+     "Late-night Middle Eastern classic, popular with conference attendees."),
+    ("Claire's Corner Copia", "restaurant", "1000 Chapel St, New Haven, CT", "",
+     "Vegetarian comfort food and famous carrot cake."),
+    ("Yale University Art Gallery", "activity", "1111 Chapel St, New Haven, CT", "",
+     "Free admission and an excellent Islamic art collection."),
+    ("East Rock Park", "activity", "", "", "Short hike with the best view of New Haven."),
+]
+
+# day offset from the first conference day, start, end, title, category, location, description
+EVENTS = [
+    (0, "16:00", "18:00", "Check-in & housing pickup", "general", "Dwight Hall, Yale",
+     "Collect your badge and meet your host."),
+    (0, "18:15", "18:30", "Maghrib prayer", "prayer", "Dwight Chapel", ""),
+    (0, "19:00", "21:00", "Opening dinner", "meal", "Commons, Schwarzman Center",
+     "Welcome remarks and dinner with all attendees."),
+    (1, "09:00", "10:00", "Breakfast", "meal", "Commons, Schwarzman Center", ""),
+    (1, "10:15", "11:45", "Keynote address", "session", "Woolsey Hall, Yale",
+     "Opening keynote followed by Q&A."),
+    (1, "12:30", "12:45", "Dhuhr prayer", "prayer", "Dwight Chapel", ""),
+    (1, "14:00", "16:00", "Breakout workshops", "session", "Linsly-Chittenden Hall",
+     "Choose from four student-led workshops."),
+    (1, "20:00", "22:00", "Community night", "social", "Schwarzman Center",
+     "Nasheeds, games and dessert."),
+    (2, "10:00", "11:30", "Closing brunch", "meal", "Commons, Schwarzman Center",
+     "Farewell brunch and closing reflections."),
+]
+
+
+def _first_conference_day():
+    """The demo conference always starts on the coming Friday."""
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    return today + timedelta(days=(4 - today.weekday()) % 7)
 
 
 class _DemoCursor:
@@ -98,6 +148,18 @@ def _seed(cursor):
         )
     for h_id in host_ids.values():
         cursor.execute("INSERT INTO users (h_id, password) VALUES (?, ?)", (h_id, "1234"))
+    for rec in RECOMMENDATIONS:
+        cursor.execute(
+            "INSERT INTO recommendations (name, category, address, url, description) VALUES (?, ?, ?, ?, ?)",
+            rec,
+        )
+    first_day = _first_conference_day()
+    for offset, start, end, title, category, location, description in EVENTS:
+        day = (first_day + timedelta(days=offset)).strftime("%Y-%m-%d")
+        cursor.execute(
+            "INSERT INTO events (title, category, start_time, end_time, location, description) VALUES (?, ?, ?, ?, ?, ?)",
+            (title, category, f"{day} {start}", f"{day} {end}", location, description),
+        )
     now = datetime.now().isoformat(sep=" ", timespec="seconds")
     for user1, user2, status in FRIENDSHIPS:
         cursor.execute(
