@@ -345,6 +345,7 @@ def create_app():
 
         csv_path = "./output/final.csv"
         txt_path = "./output/matches.txt"
+        os.makedirs("./output", exist_ok=True)
 
         db.pre_match(prematches_file)
         db.match_all("Male")
