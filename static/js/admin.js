@@ -223,4 +223,143 @@
   btnRefreshFeedback?.addEventListener("click", refreshFeedbackUI);
 
   refreshFeedbackUI();
+  // Explore recommendations and itinerary events
+  const recForm = document.getElementById("recForm");
+  const recStatus = document.getElementById("recStatus");
+  const recList = document.getElementById("recList");
+  const eventForm = document.getElementById("eventForm");
+  const eventStatus = document.getElementById("eventStatus");
+  const eventList = document.getElementById("eventList");
+
+  const value = (id) => (document.getElementById(id)?.value || "").trim();
+
+  function listRow(title, meta, onDelete) {
+    const li = document.createElement("li");
+    li.className = "admin-list__item";
+
+    const text = document.createElement("div");
+    const strong = document.createElement("strong");
+    strong.textContent = title;
+    const small = document.createElement("span");
+    small.className = "admin-list__meta";
+    small.textContent = meta;
+    text.append(strong, small);
+
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "btn-danger";
+    del.textContent = "Delete";
+    del.addEventListener("click", onDelete);
+
+    li.append(text, del);
+    return li;
+  }
+
+  async function sendJSON(url, method, body) {
+    const resp = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    const data = await safeJSON(resp);
+    if (!resp.ok) throw new Error(data.error || data.message || resp.statusText);
+    return data;
+  }
+
+  async function loadRecommendations() {
+    if (!recList) return;
+    try {
+      const resp = await fetch("/api/recommendations");
+      const data = await safeJSON(resp);
+      const recs = data.recommendations || [];
+      recList.innerHTML = "";
+      if (!recs.length) setStatus(recStatus, "No recommendations yet.", "info");
+      recs.forEach((r) => {
+        recList.appendChild(
+          listRow(r.name, [r.category, r.address].filter(Boolean).join(" · "), async () => {
+            if (!confirm(`Delete “${r.name}”?`)) return;
+            try {
+              await sendJSON(`/api/admin/recommendations/${r.r_id}`, "DELETE");
+              setStatus(recStatus, "Recommendation deleted.", "info");
+              loadRecommendations();
+            } catch (e) {
+              setStatus(recStatus, e.message || "Delete failed", "error");
+            }
+          })
+        );
+      });
+    } catch (e) {
+      console.error(e);
+      setStatus(recStatus, "Could not load recommendations.", "error");
+    }
+  }
+
+  async function loadEvents() {
+    if (!eventList) return;
+    try {
+      const resp = await fetch("/api/events");
+      const data = await safeJSON(resp);
+      const events = data.events || [];
+      eventList.innerHTML = "";
+      if (!events.length) setStatus(eventStatus, "No events yet.", "info");
+      events.forEach((ev) => {
+        const when = ev.start_time.slice(0, 16) + (ev.end_time ? ` – ${ev.end_time.slice(11, 16)}` : "");
+        eventList.appendChild(
+          listRow(ev.title, [ev.category, when, ev.location].filter(Boolean).join(" · "), async () => {
+            if (!confirm(`Delete “${ev.title}”?`)) return;
+            try {
+              await sendJSON(`/api/admin/events/${ev.e_id}`, "DELETE");
+              setStatus(eventStatus, "Event deleted.", "info");
+              loadEvents();
+            } catch (e) {
+              setStatus(eventStatus, e.message || "Delete failed", "error");
+            }
+          })
+        );
+      });
+    } catch (e) {
+      console.error(e);
+      setStatus(eventStatus, "Could not load events.", "error");
+    }
+  }
+
+  recForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    try {
+      const data = await sendJSON("/api/admin/recommendations", "POST", {
+        name: value("recName"),
+        category: value("recCategory"),
+        address: value("recAddress"),
+        url: value("recUrl"),
+        description: value("recDescription"),
+      });
+      recForm.reset();
+      setStatus(recStatus, data.message || "Recommendation added.", "info");
+      loadRecommendations();
+    } catch (err) {
+      setStatus(recStatus, err.message || "Could not add recommendation", "error");
+    }
+  });
+
+  eventForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    try {
+      const data = await sendJSON("/api/admin/events", "POST", {
+        title: value("eventTitle"),
+        category: value("eventCategory"),
+        start_time: value("eventStart"),
+        end_time: value("eventEnd"),
+        location: value("eventLocation"),
+        description: value("eventDescription"),
+      });
+      eventForm.reset();
+      setStatus(eventStatus, data.message || "Event added.", "info");
+      loadEvents();
+    } catch (err) {
+      setStatus(eventStatus, err.message || "Could not add event", "error");
+    }
+  });
+
+  loadRecommendations();
+  loadEvents();
 })();

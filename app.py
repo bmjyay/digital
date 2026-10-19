@@ -10,8 +10,19 @@ from flask import (
 )
 from db import IMCDB
 import os
+from datetime import datetime
 
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "changeme")
+RECOMMENDATION_CATEGORIES = {"cafe", "restaurant", "activity", "other"}
+EVENT_CATEGORIES = {"general", "session", "meal", "prayer", "social"}
+
+
+def _parse_datetime(value):
+    """Accepts the value of an <input type="datetime-local"> (e.g. 2026-11-14T09:30)."""
+    try:
+        return datetime.fromisoformat((value or "").strip())
+    except ValueError:
+        return None
 
 def create_app():
     app = Flask(__name__)
@@ -21,6 +32,22 @@ def create_app():
     def portal():
         """Main housing portal UI."""
         return render_template("portal.html")
+
+    @app.get("/explore")
+    def explore():
+        return render_template("explore.html")
+
+    @app.get("/itinerary")
+    def itinerary():
+        return render_template("itinerary.html")
+
+    @app.get("/api/recommendations")
+    def get_recommendations():
+        return jsonify({"recommendations": db.fetch_recommendations()}), 200
+
+    @app.get("/api/events")
+    def get_events():
+        return jsonify({"events": db.fetch_events()}), 200
 
     @app.get("/api/hosts")
     def get_hosts():
@@ -388,6 +415,68 @@ def create_app():
 
         session["has_match"] = False
         return jsonify({"message": "Matches cleared and database updated."}), 200
+
+    @app.post("/api/admin/recommendations")
+    def admin_add_recommendation():
+        if not session.get("admin"):
+            return jsonify({"error": "Unauthorized"}), 401
+
+        data = request.get_json(silent=True) or {}
+        name = (data.get("name") or "").strip()
+        category = (data.get("category") or "").strip().lower()
+        url = (data.get("url") or "").strip()
+        if not name or category not in RECOMMENDATION_CATEGORIES:
+            return jsonify({"error": "Name and a valid category are required"}), 400
+        if url and not url.startswith(("http://", "https://")):
+            return jsonify({"error": "URL must start with http:// or https://"}), 400
+
+        db.add_recommendation(
+            name,
+            category,
+            (data.get("address") or "").strip(),
+            url,
+            (data.get("description") or "").strip(),
+        )
+        return jsonify({"message": "Recommendation added."}), 200
+
+    @app.delete("/api/admin/recommendations/<int:r_id>")
+    def admin_delete_recommendation(r_id):
+        if not session.get("admin"):
+            return jsonify({"error": "Unauthorized"}), 401
+        db.delete_recommendation(r_id)
+        return jsonify({"message": "Recommendation deleted."}), 200
+
+    @app.post("/api/admin/events")
+    def admin_add_event():
+        if not session.get("admin"):
+            return jsonify({"error": "Unauthorized"}), 401
+
+        data = request.get_json(silent=True) or {}
+        title = (data.get("title") or "").strip()
+        category = (data.get("category") or "").strip().lower()
+        start_time = _parse_datetime(data.get("start_time"))
+        end_time = _parse_datetime(data.get("end_time"))
+        if not title or category not in EVENT_CATEGORIES or not start_time:
+            return jsonify({"error": "Title, category and start time are required"}), 400
+        if end_time and end_time < start_time:
+            return jsonify({"error": "End time must be after start time"}), 400
+
+        db.add_event(
+            title,
+            category,
+            start_time,
+            end_time,
+            (data.get("location") or "").strip(),
+            (data.get("description") or "").strip(),
+        )
+        return jsonify({"message": "Event added."}), 200
+
+    @app.delete("/api/admin/events/<int:e_id>")
+    def admin_delete_event(e_id):
+        if not session.get("admin"):
+            return jsonify({"error": "Unauthorized"}), 401
+        db.delete_event(e_id)
+        return jsonify({"message": "Event deleted."}), 200
 
     @app.get("/admin/download/final.csv")
     def admin_download_final_redirect():

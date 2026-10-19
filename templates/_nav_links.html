@@ -1,0 +1,5 @@
+<div class="nav__menu">
+  <a href="{{ url_for('portal') }}" class="nav__menu-link{% if request.endpoint == 'portal' %} is-active{% endif %}">Housing</a>
+  <a href="{{ url_for('explore') }}" class="nav__menu-link{% if request.endpoint == 'explore' %} is-active{% endif %}">Explore</a>
+  <a href="{{ url_for('itinerary') }}" class="nav__menu-link{% if request.endpoint == 'itinerary' %} is-active{% endif %}">Itinerary</a>
+</div>
