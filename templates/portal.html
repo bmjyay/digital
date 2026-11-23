@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>IMC Housing Portal</title>
   <meta name="description" content="Housing for Ivy Muslim Conference attendees, hosted by Yale students." />
+  <script>document.documentElement.classList.add("js")</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
@@ -75,20 +76,31 @@
   </header>
 
   <main>
-    <!-- Hero -->
-    <section class="hero wrap" id="top">
-      <div class="hero__copy">
-        <h1 class="display">
-          IMC Housing Portal
-          <span class="display__muted">Hosted by Yale students.</span>
-        </h1>
+    <!-- Banner -->
+    <section class="banner" id="top" aria-labelledby="page-title">
+      <img class="banner__img" src="{{ url_for('static', filename='images/harkness.jpg') }}"
+           alt="Harkness Tower rising above Yale's stone buildings on an autumn afternoon"
+           width="1088" height="594" fetchpriority="high" />
+      <div class="banner__shade" aria-hidden="true"></div>
+      <div class="banner__content">
+        <h1 class="banner__title" id="page-title">IMC Housing Portal</h1>
+      </div>
+      <p class="banner__place">New Haven, Connecticut</p>
+      <a class="banner__cue" href="#intro" aria-label="Scroll to learn more">
+        <span>Scroll</span>
+        <svg width="18" height="18" aria-hidden="true"><use href="#i-down"/></svg>
+      </a>
+    </section>
 
-        <p class="lede">
+    <!-- Intro -->
+    <section class="intro wrap" id="intro">
+      <div class="intro__copy">
+        <h2 class="h2" data-reveal>Hosted by Yale students.</h2>
+        <p class="lede" data-reveal>
           We pair conference attendees with Yale students who have room to spare,
           so you can spend the weekend at the conference instead of looking for a place to sleep.
         </p>
-
-        <div class="hero__actions">
+        <div class="hero__actions" data-reveal>
           <button class="btn btn--primary btn--lg" type="button" id="hero-login-cta">
             See your housing
             <svg width="20" height="20" aria-hidden="true"><use href="#i-arrow"/></svg>
@@ -98,27 +110,18 @@
             <span class="link-circle__icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-down"/></svg></span>
           </a>
         </div>
-
-        <dl class="hero__facts">
-          <div><dt>Running since</dt><dd>2009</dd></div>
-          <div><dt>Attendees</dt><dd>300+</dd></div>
-          <div><dt>Schools</dt><dd>20+</dd></div>
-        </dl>
       </div>
 
-      <figure class="hero__media">
-        <figcaption class="hero__place">New Haven, Connecticut</figcaption>
-        <div class="arch">
-          <img src="{{ url_for('static', filename='images/harkness.jpg') }}"
-               alt="Harkness Tower rising above Yale's stone buildings on an autumn afternoon"
-               width="1088" height="594" fetchpriority="high" />
-        </div>
-      </figure>
+      <dl class="hero__facts" data-reveal>
+        <div><dt>Running since</dt><dd>2009</dd></div>
+        <div><dt>Attendees</dt><dd>300+</dd></div>
+        <div><dt>Schools</dt><dd>20+</dd></div>
+      </dl>
     </section>
 
     <!-- Promise strip -->
     <section class="wrap" aria-label="What to expect">
-      <div class="strip">
+      <div class="strip" data-reveal>
         <p class="strip__title">Housing for IMC,<br><span class="muted-serif">sorted before you arrive.</span></p>
         <ul class="strip__items">
           <li><svg width="22" height="22" aria-hidden="true"><use href="#i-shield"/></svg>Every host is a Yale student</li>
@@ -130,7 +133,7 @@
 
     <!-- How it works -->
     <section class="wrap section" id="how-it-works">
-      <div class="section__head">
+      <div class="section__head" data-reveal>
         <div>
           <p class="eyebrow">How it works</p>
           <h2 class="h2">From sign-up to your host's front door.
@@ -144,17 +147,17 @@
       </div>
 
       <ol class="steps">
-        <li class="step">
+        <li class="step" data-reveal>
           <div class="step__top"><span class="step__num">01</span><svg width="28" height="28" aria-hidden="true"><use href="#i-people"/></svg></div>
           <h3 class="h3">Sign up</h3>
           <p>Attendees say they need a place to stay when they register. Yale students who want to host sign up with their Yale email.</p>
         </li>
-        <li class="step">
+        <li class="step" data-reveal>
           <div class="step__top"><span class="step__num">02</span><svg width="28" height="28" aria-hidden="true"><use href="#i-home"/></svg></div>
           <h3 class="h3">We make the matches</h3>
           <p>Organizers run the matcher. It pairs guests with hosts of the same gender, keeps any pairings you set up ahead of time, and respects each host's space.</p>
         </li>
-        <li class="step">
+        <li class="step" data-reveal>
           <div class="step__top"><span class="step__num">03</span><svg width="28" height="28" aria-hidden="true"><use href="#i-check"/></svg></div>
           <h3 class="h3">Meet your host</h3>
           <p>Assignments go out by email, and hosts can log in here to see who's staying with them. Reach out, sort out arrival times, and you're set.</p>
@@ -164,7 +167,7 @@
 
     <!-- About -->
     <section class="wrap" id="about">
-      <div class="about">
+      <div class="about" data-reveal>
         <div class="about__art" aria-hidden="true">
           <div class="arches">
             <span></span><span></span>
@@ -201,14 +204,14 @@
 
     <!-- Signed-in area -->
     <section class="wrap section" id="results">
-      <div class="section__head section__head--tight">
+      <div class="section__head section__head--tight" data-reveal>
         <div>
           <p class="eyebrow">Your portal</p>
           <h2 class="h2">Your housing.</h2>
         </div>
       </div>
 
-      <div id="result-empty" class="portal-empty">
+      <div id="result-empty" class="portal-empty" data-reveal>
         <p>Log in with your Yale email to see who's staying with you and connect with other hosts.</p>
         <button class="btn btn--primary" type="button" data-open-login>
           Log in
@@ -240,7 +243,7 @@
 
     <!-- FAQ -->
     <section class="wrap section faq" id="faq">
-      <div class="faq__intro">
+      <div class="faq__intro" data-reveal>
         <p class="eyebrow">FAQs</p>
         <h2 class="h2">Good questions.</h2>
         <p class="muted">The things people ask us most often.</p>
@@ -250,7 +253,7 @@
         </button>
       </div>
 
-      <div class="faq__list">
+      <div class="faq__list" data-reveal>
         <details class="qa" open>
           <summary>Who is the portal for?<svg width="22" height="22" aria-hidden="true"><use href="#i-plus"/></svg></summary>
           <p>IMC attendees who need somewhere to stay, and Yale students who are hosting them. Organizers use the admin side to run the matching.</p>

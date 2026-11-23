@@ -450,3 +450,51 @@
   renderFriends();
   fetchCurrentUser();
 })();
+
+/* Scroll reveal + banner parallax */
+(function () {
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const items = document.querySelectorAll("[data-reveal]");
+
+  // Stagger items that share a parent (e.g. the three steps, the intro lines).
+  const seen = new Map();
+  items.forEach((el) => {
+    const n = seen.get(el.parentElement) || 0;
+    seen.set(el.parentElement, n + 1);
+    if (n) el.style.setProperty("--reveal-delay", `${Math.min(n, 4) * 0.12}s`);
+  });
+
+  if (reduce || !("IntersectionObserver" in window)) {
+    items.forEach((el) => el.classList.add("is-visible"));
+  } else {
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return;
+          e.target.classList.add("is-visible");
+          io.unobserve(e.target);
+        });
+      },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.12 }
+    );
+    items.forEach((el) => io.observe(el));
+  }
+
+  const banner = document.querySelector(".banner");
+  if (!banner || reduce) return;
+  let ticking = false;
+  function update() {
+    ticking = false;
+    const h = banner.offsetHeight || 1;
+    const y = Math.min(window.scrollY, h);
+    banner.style.setProperty("--parallax", `${y * 0.3}px`);
+    banner.style.setProperty("--title-fade", String(Math.max(0, 1 - (y / h) * 1.4)));
+  }
+  window.addEventListener("scroll", () => {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+  }, { passive: true });
+  update();
+})();
