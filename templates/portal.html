@@ -7,7 +7,7 @@
   <meta name="description" content="Housing for Ivy Muslim Conference attendees, hosted by Yale students." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/portal.css') }}">
 </head>
 
@@ -24,21 +24,12 @@
     <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
     <symbol id="i-chat" viewBox="0 0 24 24"><path d="M5 5h14v10H10l-4 4v-4H5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
-    <!-- Yale "Y" held inside a crescent -->
-    <symbol id="i-mark" viewBox="0 0 64 64">
-      <mask id="crescent-cut">
-        <rect width="64" height="64" fill="#fff"/>
-        <circle cx="37.5" cy="27.5" r="25" fill="#000"/>
-      </mask>
-      <circle cx="32" cy="32" r="29" fill="var(--sage)" mask="url(#crescent-cut)"/>
-      <text x="36" y="45" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif" font-weight="700" font-size="42" fill="var(--yale)">Y</text>
-    </symbol>
   </svg>
 
   <header class="nav">
     <div class="nav__inner">
       <a href="{{ url_for('portal') }}" class="brand" aria-label="Ivy Muslim Conference housing portal, home">
-        <svg class="brand__mark" width="52" height="52" aria-hidden="true"><use href="#i-mark"/></svg>
+        <img class="brand__mark" src="{{ url_for('static', filename='images/yale-shield-256.png') }}" alt="" width="50" height="52" />
         <span class="brand__text">
           <span class="brand__name">Ivy Muslim Conference</span>
           <span class="brand__sub">Yale University · Housing Portal</span>
@@ -88,7 +79,7 @@
     <section class="hero wrap" id="top">
       <div class="hero__copy">
         <h1 class="display">
-          Your place to stay<br>for IMC weekend.
+          IMC Housing Portal
           <span class="display__muted">Hosted by Yale students.</span>
         </h1>
 
@@ -287,7 +278,7 @@
   <footer class="footer">
     <div class="wrap footer__inner">
       <div class="footer__brand">
-        <svg width="36" height="36" aria-hidden="true"><use href="#i-mark"/></svg>
+        <img class="footer__mark" src="{{ url_for('static', filename='images/yale-shield-256.png') }}" alt="" width="34" height="36" />
         <span>Ivy Muslim Conference at Yale · Housing Portal</span>
       </div>
       <div class="footer__links">
