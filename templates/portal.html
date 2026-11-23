@@ -4,310 +4,342 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>IMC Housing Portal</title>
+  <meta name="description" content="Housing for Ivy Muslim Conference attendees, hosted by Yale students." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/portal.css') }}">
 </head>
 
 <body>
-  <nav class="nav">
-    <a href="{{ url_for('portal') }}" class="nav__brand">
-      <img
-        id="nav-logo"
-        src="{{ url_for('static', filename='images/imc-logo.jpg') }}"
-        alt="Ivy Muslim Conference"
-        class="nav__logo"
-      />
-      <span class="nav__brand-text">Ivy Muslim Conference @ Yale</span>
-    </a>
+  <!-- Reusable icons -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-people" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M15.5 4.7a3.5 3.5 0 0 1 0 6.6M18 13.9c2.1.9 3.5 3.1 3.5 6.1"/></g></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20h-5v-5.5a3 3 0 0 0-6 0V20H4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5 10 17l9-10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5.5c0 4.4 3 8 7 9.5 4-1.5 7-5.1 7-9.5V6z"/><path d="m9 12 2.2 2.2L15.5 10"/></g></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></g></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M5 5h14v10H10l-4 4v-4H5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+    <!-- Yale "Y" held inside a crescent -->
+    <symbol id="i-mark" viewBox="0 0 64 64">
+      <mask id="crescent-cut">
+        <rect width="64" height="64" fill="#fff"/>
+        <circle cx="37.5" cy="27.5" r="25" fill="#000"/>
+      </mask>
+      <circle cx="32" cy="32" r="29" fill="var(--sage)" mask="url(#crescent-cut)"/>
+      <text x="36" y="45" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif" font-weight="700" font-size="42" fill="var(--yale)">Y</text>
+    </symbol>
+  </svg>
 
-    <div class="nav__spacer"></div>
+  <header class="nav">
+    <div class="nav__inner">
+      <a href="{{ url_for('portal') }}" class="brand" aria-label="Ivy Muslim Conference housing portal, home">
+        <svg class="brand__mark" width="52" height="52" aria-hidden="true"><use href="#i-mark"/></svg>
+        <span class="brand__text">
+          <span class="brand__name">Ivy Muslim Conference</span>
+          <span class="brand__sub">Yale University · Housing Portal</span>
+        </span>
+      </a>
 
-    <button id="nav-user-chip" class="nav-user-chip" type="button" hidden>
-      <span class="nav-user-avatar" id="nav-user-avatar">I</span>
-      <span class="nav-user-label" id="nav-user-label">IMC attendee</span>
-    </button>
+      <nav class="nav__links" aria-label="Sections">
+        <a href="#how-it-works">How it works</a>
+        <a href="#about">About IMC</a>
+        <a href="#faq">FAQs</a>
+      </nav>
 
-    <button id="nav-login-button" class="nav__link nav__link--light" type="button">
-      Log in
-    </button>
+      <div class="nav__account">
+        <button id="nav-user-chip" class="user-chip" type="button" hidden aria-haspopup="dialog">
+          <span class="user-chip__avatar" id="nav-user-avatar">I</span>
+          <span class="user-chip__label" id="nav-user-label">IMC attendee</span>
+        </button>
+        <button id="nav-login-button" class="btn btn--outline" type="button" aria-haspopup="dialog">
+          Log in
+          <svg width="18" height="18" aria-hidden="true"><use href="#i-arrow"/></svg>
+        </button>
 
-    <a class="nav__link" href="{{ url_for('admin_login') }}">Admin Panel</a>
-  </nav>
-  <body>
-    <div>
-     <div class="wave"></div>
-     <div class="wave"></div>
-     <div class="wave"></div>
+        <div id="nav-login-panel" class="login-panel" hidden role="dialog" aria-labelledby="login-title">
+          <form id="nav-login-form" class="login-form">
+            <p class="login-form__title" id="login-title">Log in with your Yale email</p>
+            <label for="nav-login-email" class="field-label">Yale email</label>
+            <input id="nav-login-email" class="input" type="email" placeholder="first.last@yale.edu" autocomplete="email" required />
+
+            <label for="nav-login-code" class="field-label">Login code</label>
+            <input id="nav-login-code" class="input" type="text" placeholder="4-digit code" inputmode="numeric" autocomplete="one-time-code" />
+            <small class="field-hint">Use the code the organizers emailed you.</small>
+
+            <div class="login-form__actions">
+              <button type="button" id="nav-logout-button" class="btn btn--text">Log out</button>
+              <span class="login-form__spacer"></span>
+              <button type="button" id="nav-login-cancel" class="btn btn--text">Cancel</button>
+              <button type="submit" class="btn btn--primary btn--sm">Log in</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
-  </body>
+  </header>
 
-  <div id="nav-login-panel" class="nav-login-panel" hidden>
-    <form id="nav-login-form" class="nav-login-form">
-      <label for="nav-login-email" class="nav-login-label">Yale email</label>
-      <input
-        id="nav-login-email"
-        type="email"
-        placeholder="first.last@yale.edu"
-        autocomplete="email"
-        required
-      />
+  <main>
+    <!-- Hero -->
+    <section class="hero wrap" id="top">
+      <div class="hero__copy">
+        <h1 class="display">
+          Your place to stay<br>for IMC weekend.
+          <span class="display__muted">Hosted by Yale students.</span>
+        </h1>
 
-      <label for="nav-login-code" class="nav-login-label">Code</label>
-      <div class="nav-login-code-row">
-        <input
-          id="nav-login-code"
-          type="text"
-          placeholder="4-digit code"
-          inputmode="numeric"
-          autocomplete="one-time-code"
-        />
-      </div>
+        <p class="lede">
+          We pair conference attendees with Yale students who have room to spare,
+          so you can spend the weekend at the conference instead of looking for a place to sleep.
+        </p>
 
-      <small class="nav-login-hint">We’ll email a code to your Yale email.</small>
-
-      <div class="nav-login-actions">
-        <button type="button" id="nav-logout-button" class="btn-secondary">Log out</button>
-        <button type="button" id="nav-login-cancel" class="btn-secondary">Cancel</button>
-        <button type="submit" class="btn-secondary">Verify &amp; Log In</button>
-      </div>
-    </form>
-  </div>
-
-  <div class="waves" aria-hidden="true">
-    <div class="wave"></div>
-    <div class="wave"></div>
-    <div class="wave"></div>
-  </div>
-
-  <main class="snap-main">
-
-    <section id="top" class="snap-section snap-section--cover">
-      <header class="cover">
-        <div class="cover__bg" aria-hidden="true"></div>
-
-        <div class="cover__inner">
-          <p class="cover__kicker">Ivy Muslim Conference · Yale</p>
-
-          <h1 class="cover__title">
-            <span id="typewriter" class="typewriter"></span>
-            <span id="type-dot" class="type-dot" aria-hidden="true">.</span>
-            <span class="typewriter__caret" aria-hidden="true"></span>
-          </h1>
-
-          <div class="cover__logo-row" aria-hidden="true">
-            <img
-              id="cover-logo"
-              src="{{ url_for('static', filename='images/imc-logo.jpg') }}"
-              alt=""
-              class="cover-logo"
-            />
-          </div>
-
-          <p class="cover__subtitle">Housing assignments without the spreadsheet chaos.</p>
-
-          <div class="cover__actions">
-            <button class="btn-primary" type="button"
-              onclick="document.getElementById('portal-hero').scrollIntoView({behavior:'smooth', block:'start'})">
-              Enter portal
-            </button>
-
-            <button class="btn-ghost" type="button"
-              onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth', block:'start'})">
-              How it works
-            </button>
-          </div>
-
-          <div class="cover__scroll" aria-hidden="true">
-            <span class="cover__scroll-dot"></span>
-            <span class="cover__scroll-text">Scroll</span>
-          </div>
+        <div class="hero__actions">
+          <button class="btn btn--primary btn--lg" type="button" id="hero-login-cta">
+            See your housing
+            <svg width="20" height="20" aria-hidden="true"><use href="#i-arrow"/></svg>
+          </button>
+          <a class="link-circle" href="#how-it-works">
+            How it works
+            <span class="link-circle__icon"><svg width="16" height="16" aria-hidden="true"><use href="#i-down"/></svg></span>
+          </a>
         </div>
-      </header>
+
+        <dl class="hero__facts">
+          <div><dt>Running since</dt><dd>2009</dd></div>
+          <div><dt>Attendees</dt><dd>300+</dd></div>
+          <div><dt>Schools</dt><dd>20+</dd></div>
+        </dl>
+      </div>
+
+      <figure class="hero__media">
+        <figcaption class="hero__place">New Haven, Connecticut</figcaption>
+        <div class="arch">
+          <img src="{{ url_for('static', filename='images/harkness.jpg') }}"
+               alt="Harkness Tower rising above Yale's stone buildings on an autumn afternoon"
+               width="1088" height="594" fetchpriority="high" />
+        </div>
+      </figure>
     </section>
 
-    <section id="portal-hero" class="snap-section">
-      <div class="main">
-        <section class="card card--hero card--hero-xl hero-centered">
-          <div class="hero-grid">
-            <div class="hero-left">
-              <p class="hero-kicker">Ivy Muslim Conference · Housing Portal</p>
-              <h2 class="hero-title">Conference housing without the chaos.</h2>
-
-              <p class="hero-body">
-                Every year since 2009, the Chaplain’s Office, in collaboration with the Yale Muslim Students Association,
-                hosts the Ivy Muslim Conference (IMC), an overnight gathering for Muslim students from the Ivy League and beyond.
-              </p>
-              <p class="hero-body">
-                As attendance has grown to 300+ students from 20+ schools, the most time-consuming task for organizers has become
-                housing: matching attendees to hosts under capacity constraints, honoring pre-arranged matches, and emailing assignments manually.
-              </p>
-              <p class="hero-body">
-                The IMC Conference Housing Portal automates this process so organizers can spend less time in spreadsheets and more time
-                building a meaningful experience for attendees.
-              </p>
-
-              <div class="hero-cta-row">
-                <button id="hero-login-cta" type="button" class="btn-primary">
-                  Log in to the portal
-                </button>
-                <button type="button" class="btn-ghost"
-                  onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth', block:'start'})">
-                  Learn how it works
-                </button>
-              </div>
-
-              <div class="hero-stats-row">
-                <div class="hero-stat-pill">
-                  <span class="hero-stat-label">Since</span>
-                  <span class="hero-stat-value">2009</span>
-                </div>
-                <div class="hero-stat-pill">
-                  <span class="hero-stat-label">Last year</span>
-                  <span class="hero-stat-value">300+ attendees</span>
-                </div>
-                <div class="hero-stat-pill">
-                  <span class="hero-stat-label">Schools</span>
-                  <span class="hero-stat-value">20+ campuses</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+    <!-- Promise strip -->
+    <section class="wrap" aria-label="What to expect">
+      <div class="strip">
+        <p class="strip__title">Housing for IMC,<br><span class="muted-serif">sorted before you arrive.</span></p>
+        <ul class="strip__items">
+          <li><svg width="22" height="22" aria-hidden="true"><use href="#i-shield"/></svg>Every host is a Yale student</li>
+          <li><svg width="22" height="22" aria-hidden="true"><use href="#i-people"/></svg>Matched by gender first</li>
+          <li><svg width="22" height="22" aria-hidden="true"><use href="#i-link"/></svg>Pre-arranged pairings kept</li>
+        </ul>
       </div>
     </section>
 
-    <section id="how-it-works" class="snap-section">
-      <div class="main">
-        <section class="card card-section how-centered">
-          <h2 class="section-heading">How it works</h2>
-          <div class="steps-grid">
-            <div class="step-item">
-              <div class="step-badge">1</div>
-              <h3>Upload your data</h3>
-              <p>
-                Organizers upload host and attendee spreadsheets, plus an optional prematches file
-                for already agreed-upon pairings.
-              </p>
-            </div>
-
-            <div class="step-item">
-              <div class="step-badge">2</div>
-              <h3>Run the matcher</h3>
-              <p>
-                The system matches attendees to available hosts using gender as the default criterion,
-                with options to incorporate school, class year, and related majors.
-              </p>
-            </div>
-
-            <div class="step-item">
-              <div class="step-badge">3</div>
-              <h3>Review &amp; share assignments</h3>
-              <p>
-                Housing assignments are stored in the database, visible to hosts via the portal,
-                and exported as a spreadsheet for quick email distribution.
-              </p>
-            </div>
-          </div>
-        </section>
-      </div>
-    </section>
-
-    <section id="results" class="snap-section">
-      <div class="main">
-        <section id="result" class="result" hidden>
-          <!-- stacked layout: Hostees card above Community card -->
-          <div class="layout-stack">
-            <div class="card">
-              <h2 id="host-name" class="host-name"></h2>
-              <h3 class="section-title">Hostees</h3>
-              <div id="hostees-list" class="hostees-list"></div>
-            </div>
-
-            <aside class="card card-friends">
-              <h3 class="section-title">Connect with your IMC community</h3>
-              <p class="hint hint--small">
-                Wave at people to connect. When both of you wave, you become a Match.
-              </p>
-
-              <div class="sp-filter-group">
-                <button type="button" class="sp-filter sp-filter--active" data-friend-filter="all">All</button>
-                <button type="button" class="sp-filter" data-friend-filter="friend">Matches</button>
-                <button type="button" class="sp-filter" data-friend-filter="requestedYou">Waved at you</button>
-              </div>
-
-              <div id="friends-list" class="sp-friends-list"></div>
-            </aside>
-          </div>
-        </section>
-
-        <section id="result-empty" class="card card-section result-empty">
-          <h2 class="section-heading">Your housing assignment</h2>
-          <p class="hint">
-            Log in to view your host and hostee information.
-          </p>
-        </section>
-      </div>
-    </section>
-
-  </main>
-
-  <button id="feedback-open" class="feedback-fab" type="button">Feedback</button>
-
-  <div id="feedback-overlay" class="feedback-overlay" hidden>
-    <div class="feedback-modal" role="dialog" aria-modal="true" aria-labelledby="feedback-title">
-      <div class="feedback-header">
+    <!-- How it works -->
+    <section class="wrap section" id="how-it-works">
+      <div class="section__head">
         <div>
-          <h2 class="feedback-title" id="feedback-title">Help improve the portal</h2>
-          <p class="feedback-subtext">
-            Share a bug, idea, or anything that felt confusing. This goes to the organizing team.
-          </p>
+          <p class="eyebrow">How it works</p>
+          <h2 class="h2">From sign-up to your host's front door.
+            <span class="display__muted">Three steps, mostly on us.</span>
+          </h2>
         </div>
-        <button id="feedback-close" class="feedback-close" type="button" aria-label="Close">
-          &times;
+        <p class="section__aside">
+          The organizers handle the matching. All you need to do is sign up,
+          then check your email or the portal once assignments go out.
+        </p>
+      </div>
+
+      <ol class="steps">
+        <li class="step">
+          <div class="step__top"><span class="step__num">01</span><svg width="28" height="28" aria-hidden="true"><use href="#i-people"/></svg></div>
+          <h3 class="h3">Sign up</h3>
+          <p>Attendees say they need a place to stay when they register. Yale students who want to host sign up with their Yale email.</p>
+        </li>
+        <li class="step">
+          <div class="step__top"><span class="step__num">02</span><svg width="28" height="28" aria-hidden="true"><use href="#i-home"/></svg></div>
+          <h3 class="h3">We make the matches</h3>
+          <p>Organizers run the matcher. It pairs guests with hosts of the same gender, keeps any pairings you set up ahead of time, and respects each host's space.</p>
+        </li>
+        <li class="step">
+          <div class="step__top"><span class="step__num">03</span><svg width="28" height="28" aria-hidden="true"><use href="#i-check"/></svg></div>
+          <h3 class="h3">Meet your host</h3>
+          <p>Assignments go out by email, and hosts can log in here to see who's staying with them. Reach out, sort out arrival times, and you're set.</p>
+        </li>
+      </ol>
+    </section>
+
+    <!-- About -->
+    <section class="wrap" id="about">
+      <div class="about">
+        <div class="about__art" aria-hidden="true">
+          <div class="arches">
+            <span></span><span></span>
+            <div class="arches__core">
+              <svg width="56" height="56"><use href="#i-home"/></svg>
+              <p class="arches__year">Since 2009</p>
+              <p class="arches__stats">300+ students<br>20+ schools</p>
+            </div>
+          </div>
+        </div>
+        <div class="about__copy">
+          <p class="eyebrow">About IMC</p>
+          <h2 class="h2">Why this portal exists.</h2>
+          <p>
+            Every year since 2009, the Chaplain's Office, in collaboration with the Yale Muslim Students Association,
+            hosts the Ivy Muslim Conference (IMC), an overnight gathering for Muslim students from the Ivy League and beyond.
+          </p>
+          <p>
+            As attendance has grown to 300+ students from 20+ schools, the most time-consuming task for organizers has become
+            housing: matching attendees to hosts under capacity constraints, honoring pre-arranged matches, and emailing
+            assignments manually.
+          </p>
+          <p>
+            The IMC Conference Housing Portal automates this process so organizers can spend less time in spreadsheets and
+            more time building a meaningful experience for attendees.
+          </p>
+          <button class="link-arrow" type="button" data-open-login>
+            Hosting this year? Log in
+            <svg width="18" height="18" aria-hidden="true"><use href="#i-arrow"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Signed-in area -->
+    <section class="wrap section" id="results">
+      <div class="section__head section__head--tight">
+        <div>
+          <p class="eyebrow">Your portal</p>
+          <h2 class="h2">Your housing.</h2>
+        </div>
+      </div>
+
+      <div id="result-empty" class="portal-empty">
+        <p>Log in with your Yale email to see who's staying with you and connect with other hosts.</p>
+        <button class="btn btn--primary" type="button" data-open-login>
+          Log in
+          <svg width="18" height="18" aria-hidden="true"><use href="#i-arrow"/></svg>
         </button>
       </div>
 
-      <div class="pill-group pill-group--tight">
-        <button type="button" class="pill pill--small pill--active" data-feedback-type="idea">Idea</button>
-        <button type="button" class="pill pill--small" data-feedback-type="bug">Bug</button>
-        <button type="button" class="pill pill--small" data-feedback-type="confusing">Confusing</button>
-        <button type="button" class="pill pill--small" data-feedback-type="other">Other</button>
+      <div id="result" class="portal-grid" hidden>
+        <article class="panel">
+          <p class="panel__label">Host</p>
+          <h3 id="host-name" class="panel__title"></h3>
+          <p class="panel__label panel__label--spaced">Your guests</p>
+          <div id="hostees-list" class="guest-list"></div>
+        </article>
+
+        <article class="panel">
+          <p class="panel__label">Other hosts</p>
+          <h3 class="panel__title">Find your people</h3>
+          <p class="panel__hint">Wave at someone to say hello. If they wave back, you're connected.</p>
+          <div class="filters" role="group" aria-label="Filter hosts">
+            <button type="button" class="filter is-active" data-friend-filter="all">Everyone</button>
+            <button type="button" class="filter" data-friend-filter="friend">Connected</button>
+            <button type="button" class="filter" data-friend-filter="requestedYou">Waved at you</button>
+          </div>
+          <div id="friends-list" class="people-list"></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="wrap section faq" id="faq">
+      <div class="faq__intro">
+        <p class="eyebrow">FAQs</p>
+        <h2 class="h2">Good questions.</h2>
+        <p class="muted">The things people ask us most often.</p>
+        <button class="link-arrow" type="button" data-open-feedback>
+          Ask us something else
+          <svg width="18" height="18" aria-hidden="true"><use href="#i-arrow"/></svg>
+        </button>
       </div>
 
-      <form id="feedback-form" class="feedback-form">
-        <label class="label" for="feedback-message">Your feedback</label>
-        <textarea
-          id="feedback-message"
-          rows="4"
-          required
-          placeholder="Tell us what worked, what didn’t, or what you’d love to see…"
-        ></textarea>
+      <div class="faq__list">
+        <details class="qa" open>
+          <summary>Who is the portal for?<svg width="22" height="22" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+          <p>IMC attendees who need somewhere to stay, and Yale students who are hosting them. Organizers use the admin side to run the matching.</p>
+        </details>
+        <details class="qa">
+          <summary>How are guests matched with hosts?<svg width="22" height="22" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+          <p>Guests are paired with hosts of the same gender, and nobody is given more guests than they said they can take. If you've already arranged to stay with someone, tell the organizers and we'll keep that pairing.</p>
+        </details>
+        <details class="qa">
+          <summary>Does it cost anything?<svg width="22" height="22" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+          <p>No. Hosts volunteer their space, and there's no fee to stay with one.</p>
+        </details>
+        <details class="qa">
+          <summary>When will I find out where I'm staying?<svg width="22" height="22" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+          <p>Organizers send assignments by email once matching is done, usually in the days before the conference. Hosts can also log in here to see their guests' names and contact details.</p>
+        </details>
+        <details class="qa">
+          <summary>Can I stay with a friend?<svg width="22" height="22" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+          <p>Yes. If a Yale student has already agreed to host you, let the organizers know before matching and we'll lock it in.</p>
+        </details>
+      </div>
+    </section>
+  </main>
 
-        <label class="label label--sm" for="feedback-email">
-          Optional contact email
-          <span class="label-note">(if you’d like a reply)</span>
-        </label>
-        <input id="feedback-email" type="email" placeholder="first.last@yale.edu" />
+  <footer class="footer">
+    <div class="wrap footer__inner">
+      <div class="footer__brand">
+        <svg width="36" height="36" aria-hidden="true"><use href="#i-mark"/></svg>
+        <span>Ivy Muslim Conference at Yale · Housing Portal</span>
+      </div>
+      <div class="footer__links">
+        <button type="button" class="footer__link" data-open-feedback>Send feedback</button>
+        <a class="footer__link" href="{{ url_for('admin_login') }}">Organizer login</a>
+      </div>
+    </div>
+  </footer>
 
-        <div class="feedback-actions">
-          <button id="feedback-cancel" type="button" class="btn-secondary">Cancel</button>
-          <button type="submit" class="btn-secondary">Send feedback</button>
+  <!-- Feedback -->
+  <button id="feedback-open" class="feedback-fab" type="button" aria-label="Send feedback">
+    <svg width="18" height="18" aria-hidden="true"><use href="#i-chat"/></svg>
+    Feedback
+  </button>
+
+  <div id="feedback-overlay" class="overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="feedback-title">
+      <div class="modal__head">
+        <div>
+          <h2 class="modal__title" id="feedback-title">Tell us how it went</h2>
+          <p class="muted">Found a bug, got stuck, or have an idea? It goes straight to the organizers.</p>
+        </div>
+        <button id="feedback-close" class="icon-btn" type="button" aria-label="Close">
+          <svg width="20" height="20" aria-hidden="true"><use href="#i-close"/></svg>
+        </button>
+      </div>
+
+      <form id="feedback-form" class="modal__form">
+        <div class="chips" role="radiogroup" aria-label="Feedback type">
+          <button type="button" class="chip is-active" role="radio" aria-checked="true" data-feedback-type="idea">Idea</button>
+          <button type="button" class="chip" role="radio" aria-checked="false" data-feedback-type="bug">Bug</button>
+          <button type="button" class="chip" role="radio" aria-checked="false" data-feedback-type="confusing">Confusing</button>
+          <button type="button" class="chip" role="radio" aria-checked="false" data-feedback-type="other">Other</button>
+        </div>
+
+        <label class="field-label" for="feedback-message">Your feedback</label>
+        <textarea id="feedback-message" class="input" rows="5" required
+          placeholder="What worked, what didn't, or what you'd change"></textarea>
+
+        <p id="feedback-login-note" class="notice" hidden>
+          Please log in first so we know who to follow up with.
+          <button type="button" class="btn btn--text" data-open-login>Log in</button>
+        </p>
+        <p id="feedback-status" class="notice notice--ok" hidden role="status"></p>
+
+        <div class="modal__actions">
+          <button id="feedback-cancel" type="button" class="btn btn--text">Cancel</button>
+          <button id="feedback-submit" type="submit" class="btn btn--primary btn--sm">Send feedback</button>
         </div>
       </form>
     </div>
   </div>
-
-  <footer class="footer">
-    <div class="footer__inner">
-      <div class="footer__left">
-        <strong>Ivy Muslim Conference @ Yale</strong>
-        <span class="footer__muted">· Housing Portal</span>
-      </div>
-      <div class="footer__right">
-        <span class="footer__muted">Need help?</span>
-        <span class="footer__muted">Use the Feedback button.</span>
-      </div>
-    </div>
-  </footer>
 
   <script src="{{ url_for('static', filename='js/portal.js') }}"></script>
 </body>
