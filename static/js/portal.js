@@ -23,6 +23,7 @@
   const hosteesListEl = $("hostees-list");
 
   const friendsListEl = $("friends-list");
+  const isHome = Boolean(resultSection); // guests + hosts directory only live on the Housing page
   const filterBtns = $$("[data-friend-filter]");
 
   let currentFilter = "all";
@@ -82,7 +83,8 @@
   function openLoginFromAnywhere() {
     closeFeedback();
     if (currentUser) {
-      $("results")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (isHome) $("results").scrollIntoView({ behavior: "smooth", block: "start" });
+      else window.location.href = "/#results";
       return;
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -157,6 +159,7 @@
   /* ---------- Guests ---------- */
 
   function clearResult() {
+    if (!isHome) return;
     resultSection.hidden = true;
     resultEmpty.hidden = false;
     hostNameEl.textContent = "";
@@ -164,6 +167,7 @@
   }
 
   function renderHost(user) {
+    if (!isHome) return;
     hostNameEl.textContent = user.name || "Your account";
     const hostees = Array.isArray(user.hostees) ? user.hostees : [];
 
@@ -243,7 +247,7 @@
   }
 
   async function refreshDirectory() {
-    if (!currentUser?.email) return clearDirectoryState();
+    if (!isHome || !currentUser?.email) return clearDirectoryState();
 
     const hosts = await getJSON("/api/hosts");
     hostsDirectory = Array.isArray(hosts.hosts) ? hosts.hosts : [];
@@ -272,6 +276,7 @@
   const BUTTON_LABEL = { available: "Wave", requested: "Undo", requestedYou: "Wave back", friend: "Remove" };
 
   function renderFriends() {
+    if (!isHome) return;
     if (!currentUser?.email) {
       friendsListEl.innerHTML = `<p class="empty">Log in to see other hosts.</p>`;
       return;
@@ -332,7 +337,7 @@
     });
   });
 
-  friendsListEl.addEventListener("click", async (e) => {
+  friendsListEl?.addEventListener("click", async (e) => {
     const btn = e.target.closest?.(".person__btn");
     if (!btn) return;
     const row = btn.closest(".person");
@@ -451,37 +456,10 @@
   fetchCurrentUser();
 })();
 
-/* Scroll reveal + banner parallax */
+/* Banner parallax (Housing page) */
 (function () {
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const items = document.querySelectorAll("[data-reveal]");
-
-  // Stagger items that share a parent (e.g. the three steps, the intro lines).
-  const seen = new Map();
-  items.forEach((el) => {
-    const n = seen.get(el.parentElement) || 0;
-    seen.set(el.parentElement, n + 1);
-    if (n) el.style.setProperty("--reveal-delay", `${Math.min(n, 4) * 0.12}s`);
-  });
-
-  if (reduce || !("IntersectionObserver" in window)) {
-    items.forEach((el) => el.classList.add("is-visible"));
-  } else {
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (!e.isIntersecting) return;
-          e.target.classList.add("is-visible");
-          io.unobserve(e.target);
-        });
-      },
-      { rootMargin: "0px 0px -10% 0px", threshold: 0.12 }
-    );
-    items.forEach((el) => io.observe(el));
-  }
-
   const banner = document.querySelector(".banner");
-  if (!banner || reduce) return;
+  if (!banner || window.IMC?.reduceMotion) return;
   let ticking = false;
   function update() {
     ticking = false;
@@ -497,4 +475,35 @@
     }
   }, { passive: true });
   update();
+})();
+
+/* "The weekend at a glance": next few events, linking to the full itinerary */
+(function () {
+  const section = document.getElementById("weekend");
+  const list = document.getElementById("weekend-list");
+  if (!section || !list || !window.IMC) return;
+  const { el, titleCase, getJSON, parseTime, timeFmt, shortDayFmt } = window.IMC;
+
+  getJSON("/api/events")
+    .then(({ events = [] }) => {
+      if (!events.length) return;
+      const now = new Date();
+      const upcoming = events.filter((e) => (parseTime(e.end_time) || parseTime(e.start_time)) >= now);
+      const pick = (upcoming.length ? upcoming : events).slice(0, 4);
+
+      pick.forEach((event) => {
+        const start = parseTime(event.start_time);
+        const item = el("li", "agenda__item");
+        const when = el("p", "agenda__when");
+        when.appendChild(el("span", "agenda__day", shortDayFmt.format(start)));
+        when.appendChild(el("span", "agenda__time", timeFmt.format(start)));
+        item.appendChild(when);
+        item.appendChild(el("h3", "agenda__title", event.title));
+        if (event.location) item.appendChild(el("p", "agenda__place", event.location));
+        item.appendChild(el("span", `tag tag--${event.category}`, titleCase(event.category)));
+        list.appendChild(item);
+      });
+      section.hidden = false;
+    })
+    .catch((err) => console.warn("Could not load the schedule preview:", err));
 })();

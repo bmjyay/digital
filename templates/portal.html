@@ -1,81 +1,8 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>IMC Housing Portal</title>
-  <meta name="description" content="Housing for Ivy Muslim Conference attendees, hosted by Yale students." />
-  <script>document.documentElement.classList.add("js")</script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/portal.css') }}">
-</head>
-
-<body>
-  <!-- Reusable icons -->
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="i-people" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M15.5 4.7a3.5 3.5 0 0 1 0 6.6M18 13.9c2.1.9 3.5 3.1 3.5 6.1"/></g></symbol>
-    <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20h-5v-5.5a3 3 0 0 0-6 0V20H4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
-    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5 10 17l9-10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="i-shield" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5.5c0 4.4 3 8 7 9.5 4-1.5 7-5.1 7-9.5V6z"/><path d="m9 12 2.2 2.2L15.5 10"/></g></symbol>
-    <symbol id="i-link" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></g></symbol>
-    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
-    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
-    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M5 5h14v10H10l-4 4v-4H5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
-  </svg>
-
-  <header class="nav">
-    <div class="nav__inner">
-      <a href="{{ url_for('portal') }}" class="brand" aria-label="Ivy Muslim Conference housing portal, home">
-        <img class="brand__mark" src="{{ url_for('static', filename='images/yale-shield-256.png') }}" alt="" width="50" height="52" />
-        <span class="brand__text">
-          <span class="brand__name">Ivy Muslim Conference</span>
-          <span class="brand__sub">Yale University · Housing Portal</span>
-        </span>
-      </a>
-
-      <nav class="nav__links" aria-label="Sections">
-        <a href="#how-it-works">How it works</a>
-        <a href="#about">About IMC</a>
-        <a href="#faq">FAQs</a>
-      </nav>
-
-      <div class="nav__account">
-        <button id="nav-user-chip" class="user-chip" type="button" hidden aria-haspopup="dialog">
-          <span class="user-chip__avatar" id="nav-user-avatar">I</span>
-          <span class="user-chip__label" id="nav-user-label">IMC attendee</span>
-        </button>
-        <button id="nav-login-button" class="btn btn--outline" type="button" aria-haspopup="dialog">
-          Log in
-          <svg width="18" height="18" aria-hidden="true"><use href="#i-arrow"/></svg>
-        </button>
-
-        <div id="nav-login-panel" class="login-panel" hidden role="dialog" aria-labelledby="login-title">
-          <form id="nav-login-form" class="login-form">
-            <p class="login-form__title" id="login-title">Log in with your Yale email</p>
-            <label for="nav-login-email" class="field-label">Yale email</label>
-            <input id="nav-login-email" class="input" type="email" placeholder="first.last@yale.edu" autocomplete="email" required />
-
-            <label for="nav-login-code" class="field-label">Login code</label>
-            <input id="nav-login-code" class="input" type="text" placeholder="4-digit code" inputmode="numeric" autocomplete="one-time-code" />
-            <small class="field-hint">Use the code the organizers emailed you.</small>
-
-            <div class="login-form__actions">
-              <button type="button" id="nav-logout-button" class="btn btn--text">Log out</button>
-              <span class="login-form__spacer"></span>
-              <button type="button" id="nav-login-cancel" class="btn btn--text">Cancel</button>
-              <button type="submit" class="btn btn--primary btn--sm">Log in</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <main>
+{% extends "base.html" %}
+{% block title %}IMC Housing Portal{% endblock %}
+{% block description %}Housing for Ivy Muslim Conference attendees, hosted by Yale students.{% endblock %}
+{% block body_class %}page-home{% endblock %}
+{% block content %}
     <!-- Banner -->
     <section class="banner" id="top" aria-labelledby="page-title">
       <img class="banner__img" src="{{ url_for('static', filename='images/harkness.jpg') }}"
@@ -134,12 +61,7 @@
     <!-- How it works -->
     <section class="wrap section" id="how-it-works">
       <div class="section__head" data-reveal>
-        <div>
-          <p class="eyebrow">How it works</p>
-          <h2 class="h2">From sign-up to your host's front door.
-            <span class="display__muted">Three steps, mostly on us.</span>
-          </h2>
-        </div>
+        <h2 class="h2">How it works</h2>
         <p class="section__aside">
           The organizers handle the matching. All you need to do is sign up,
           then check your email or the portal once assignments go out.
@@ -202,6 +124,18 @@
       </div>
     </section>
 
+    <!-- Agenda preview -->
+    <section class="wrap section section--flush" id="weekend" hidden>
+      <div class="section__head" data-reveal>
+        <h2 class="h2">The weekend at a glance</h2>
+        <a class="link-arrow link-arrow--flat" href="{{ url_for('itinerary') }}">
+          Full itinerary
+          <svg width="18" height="18" aria-hidden="true"><use href="#i-arrow"/></svg>
+        </a>
+      </div>
+      <ol id="weekend-list" class="agenda" data-reveal></ol>
+    </section>
+
     <!-- Signed-in area -->
     <section class="wrap section" id="results">
       <div class="section__head section__head--tight" data-reveal>
@@ -244,8 +178,7 @@
     <!-- FAQ -->
     <section class="wrap section faq" id="faq">
       <div class="faq__intro" data-reveal>
-        <p class="eyebrow">FAQs</p>
-        <h2 class="h2">Good questions.</h2>
+        <h2 class="h2">FAQs</h2>
         <p class="muted">The things people ask us most often.</p>
         <button class="link-arrow" type="button" data-open-feedback>
           Ask us something else
@@ -276,65 +209,4 @@
         </details>
       </div>
     </section>
-  </main>
-
-  <footer class="footer">
-    <div class="wrap footer__inner">
-      <div class="footer__brand">
-        <img class="footer__mark" src="{{ url_for('static', filename='images/yale-shield-256.png') }}" alt="" width="34" height="36" />
-        <span>Ivy Muslim Conference at Yale · Housing Portal</span>
-      </div>
-      <div class="footer__links">
-        <button type="button" class="footer__link" data-open-feedback>Send feedback</button>
-        <a class="footer__link" href="{{ url_for('admin_login') }}">Organizer login</a>
-      </div>
-    </div>
-  </footer>
-
-  <!-- Feedback -->
-  <button id="feedback-open" class="feedback-fab" type="button" aria-label="Send feedback">
-    <svg width="18" height="18" aria-hidden="true"><use href="#i-chat"/></svg>
-    Feedback
-  </button>
-
-  <div id="feedback-overlay" class="overlay" hidden>
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="feedback-title">
-      <div class="modal__head">
-        <div>
-          <h2 class="modal__title" id="feedback-title">Tell us how it went</h2>
-          <p class="muted">Found a bug, got stuck, or have an idea? It goes straight to the organizers.</p>
-        </div>
-        <button id="feedback-close" class="icon-btn" type="button" aria-label="Close">
-          <svg width="20" height="20" aria-hidden="true"><use href="#i-close"/></svg>
-        </button>
-      </div>
-
-      <form id="feedback-form" class="modal__form">
-        <div class="chips" role="radiogroup" aria-label="Feedback type">
-          <button type="button" class="chip is-active" role="radio" aria-checked="true" data-feedback-type="idea">Idea</button>
-          <button type="button" class="chip" role="radio" aria-checked="false" data-feedback-type="bug">Bug</button>
-          <button type="button" class="chip" role="radio" aria-checked="false" data-feedback-type="confusing">Confusing</button>
-          <button type="button" class="chip" role="radio" aria-checked="false" data-feedback-type="other">Other</button>
-        </div>
-
-        <label class="field-label" for="feedback-message">Your feedback</label>
-        <textarea id="feedback-message" class="input" rows="5" required
-          placeholder="What worked, what didn't, or what you'd change"></textarea>
-
-        <p id="feedback-login-note" class="notice" hidden>
-          Please log in first so we know who to follow up with.
-          <button type="button" class="btn btn--text" data-open-login>Log in</button>
-        </p>
-        <p id="feedback-status" class="notice notice--ok" hidden role="status"></p>
-
-        <div class="modal__actions">
-          <button id="feedback-cancel" type="button" class="btn btn--text">Cancel</button>
-          <button id="feedback-submit" type="submit" class="btn btn--primary btn--sm">Send feedback</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script src="{{ url_for('static', filename='js/portal.js') }}"></script>
-</body>
-</html>
+{% endblock %}

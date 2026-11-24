@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Explore New Haven · IMC{% endblock %}
+{% block description %}Cafes, restaurants and things to do near Yale, recommended for IMC attendees.{% endblock %}
+{% block content %}
+    <section class="page-head wrap">
+      <p class="eyebrow" data-reveal>New Haven · Recommendations</p>
+      <h1 class="page-head__title" data-reveal>Explore New Haven</h1>
+      <p class="lede" data-reveal>Cafes, restaurants and things to do between sessions, picked by students who live here.</p>
+    </section>
+
+    <section class="wrap page-body">
+      <div id="explore-filters" class="filters" role="group" aria-label="Filter by type"></div>
+      <div id="explore-grid" class="places" aria-live="polite"></div>
+      <p id="explore-empty" class="portal-empty portal-empty--plain" hidden>No recommendations yet. Check back soon.</p>
+    </section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/explore.js') }}"></script>{% endblock %}
