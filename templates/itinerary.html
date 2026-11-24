@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Itinerary · IMC{% endblock %}
+{% block description %}The Ivy Muslim Conference schedule: sessions, meals and prayer times for the weekend.{% endblock %}
+{% block content %}
+    <section class="page-head wrap">
+      <p class="eyebrow" data-reveal>Ivy Muslim Conference · Schedule</p>
+      <h1 class="page-head__title" data-reveal>Itinerary</h1>
+      <p class="lede" data-reveal>Sessions, meals and prayer times for the weekend. Times are local to New Haven.</p>
+    </section>
+
+    <section class="wrap page-body">
+      <div id="itinerary-filters" class="filters" role="group" aria-label="Filter by type"></div>
+      <div id="itinerary-days" class="days" aria-live="polite"></div>
+      <p id="itinerary-empty" class="portal-empty portal-empty--plain" hidden>The schedule hasn't been posted yet. Check back closer to the weekend.</p>
+    </section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/itinerary.js') }}"></script>{% endblock %}
